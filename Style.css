@@ -1,0 +1,289 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #d4f0f3, #a6d9de);
+  color: #222;
+}
+
+body,html{
+   overflow-x: hidden;
+}
+
+header {
+  background-color: #1bacc2;
+  padding: 20px 50px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  
+}
+
+.hamburger {
+  display: none;
+  font-size: 30px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+}
+
+.logo span {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: rgb(255, 255, 255);
+  font-weight: 500;
+  transition: 0.7s;
+
+}
+
+nav a:hover{
+  color: #082f49;
+  transition:0.7s;
+}
+
+
+
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  gap: 50px;
+}
+
+.profile-image img {
+  width: 500px;
+  border-radius: 50%;
+  padding: 10px;
+}
+
+.intro-text h1 {
+  font-family: "Poppins", sans-serif;
+   font-weight: 700;
+  font-size: 6em;
+  color: #007d94;
+}
+
+.intro-text h2 {
+  margin-top: 20px;
+  font-size: 1.5em;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  text-align: left;
+}
+
+.intro-text p {
+  margin-top: 15px;
+  font-size: 15px;
+  max-width: 500px;
+ font-family: "Nunito Sans", sans-serif;
+  font-weight: 400;
+  word-spacing: 4px;
+  line-height: 1.6;
+}
+
+.enroll-btn {
+  display: inline-block;
+  margin-top: 25px;
+  background-color: #008fa1;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.7s;
+}
+
+.enroll-btn:hover{
+  background-color: #075985;
+  transition: 0.7s;
+}
+
+.courses {
+    padding: 60px 40px;
+    background-color: #f3f3f3;
+    text-align: center;
+  }
+  
+  .courses h2 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    font-weight: bold;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .courses h2::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 5px;
+    background-color: #3995a0;
+    margin: 8px auto 0;
+    border-radius: 5px;
+  }
+  
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 50px;
+    margin-top: 40px;
+  }
+  
+  .course-card {
+    background-color: #fff;
+    display: flex;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width:105%;
+  }
+  
+  .course-card img {
+    width:50%;
+    object-fit: fill;
+  }
+  
+  .course-info {
+    padding: 20px;
+    text-align: left;
+    flex: 1;
+  }
+  
+  .course-info h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  
+  .course-info p {
+    font-size: 0.80em;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  
+  .course-info .enroll-btn {
+    background-color: #045a6b;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 3px;
+    display: inline-block;
+     transition: 0.7s;
+  }
+
+  .course-info .enroll-btn:hover{
+    color: #ffffff;
+    background-color: #046b4a;
+    transition: 0.7s;
+  }
+
+  #quick_link{
+color: #ffffff;
+transition: 0.3s;
+  }
+
+
+  #quick_link:hover{
+color: #172554;
+transition: 0.3s;
+  }
+
+
+
+
+  /*this is for mobile version yep bro */
+
+ @media (max-width: 768px) {
+  .hamburger {
+    display: block;
+    z-index: 101; 
+  }
+
+  nav {
+    display: flex;
+   position: relative;
+    flex-direction: column;
+    width: 100%; /* full screen width */
+    background-color: #00bcd4;
+    padding: 10px 0;
+    position: absolute;
+    top: 100px;
+    left: 0;
+
+ opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none; /* Prevent click when hidden */
+    z-index: 100;
+  
+  }
+
+  nav a {
+    margin: 15px 50px; /* Increased spacing for better look */
+    font-size: 15px;
+    transition: color 0.3s ease;
+  }
+
+  nav.show {
+    display:flex;
+     opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    flex-direction: column;  /* stack vertically */
+    padding: 30px 20px;      /* reduce padding */
+    gap: 20px;
+  }
+
+  .profile-image img {
+    width: 100%;   /* make image responsive */
+    max-width: 300px;  /* limit max size */
+  }
+
+  .intro-text h1 {
+    font-size: 3em;  /* smaller title */
+  }
+
+  .intro-text p {
+    max-width: 100%;  /* allow full width */
+  }
+}
+
+
+
+
+
