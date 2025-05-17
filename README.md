@@ -4,7 +4,7 @@
 This website showcases the courses offered in Business Studies and Accounting for both Ordinary Level (O/L) and Advanced Level (A/L) students. It also serves as a platform to connect, explore podcasts, and access automation tools designed for business tasks.
 
 ## 🔗 Live Website
-[Visit the Website](https://your-website-link-here.com)
+[Visit the Website]([https://penumaweb.github.io/Penuma/])
 
 ## 📚 Courses Offered
 - Grade 10: Business Studies & Accounting
@@ -18,10 +18,6 @@ This website showcases the courses offered in Business Studies and Accounting fo
 - Clean, Gen-Z-friendly design
 - VBA Automation project highlights
 - Podcast section
-
-## 📞 Contact
-- WhatsApp: [+94 743614205](https://wa.me/94743614205)
-- Call: [Click to Call](tel:+94743614205)
 
 ## 📄 License
 This project is **not open source**.  
