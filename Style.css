@@ -217,6 +217,11 @@ color: #172554;
 transition: 0.3s;
   }
 
+.parallax-section {
+  background-attachment: fixed;
+}
+
+
 
 
 
