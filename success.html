@@ -1,19 +1,24 @@
-<!-- success.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Payment Successful</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-green-50 text-green-800 min-h-screen flex flex-col items-center justify-center text-center">
-  <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md">
-    <h1 class="text-3xl font-bold mb-4">✅ Payment Successful</h1>
-    <p class="mb-6">Thank you for your payment. Your resources will be shared with you shortly.</p>
-    <a href="/" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">
-      Go to Homepage
-    </a>
-  </div>
-</body>
-</html>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const resource = params.get("resource");
+
+  const links = {
+    "test-paper-1": "https://mega.nz/file/alRWiJ4B#i7RQ-rAOi16oGvO-YR5V4eLnRPCUAl7DxPHrhiagzU4",
+    "mock-exam-12": "https://mega.nz/file/ANOTHER_FILE_LINK#ANOTHER_KEY",
+    "accounting-ol": "https://mega.nz/file/YET_ANOTHER_LINK#KEY"
+  };
+
+  const link = links[resource];
+
+  if (link) {
+    document.getElementById("download-button").innerHTML = `
+      <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
+        📥 Download Now
+      </a>
+    `;
+  } else {
+    document.getElementById("download-button").innerHTML = `
+      <p class="text-red-600">Could not find the resource. Please contact support.</p>
+    `;
+  }
+</script>
