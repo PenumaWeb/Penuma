@@ -222,6 +222,10 @@ color: #172554;
 transition: 0.3s;
   }
 
+.active-nav {
+  @apply text-blue-950 font-semibold border-b-2 border-blue-950;
+}
+
 
 @tailwind base;
 @tailwind components;
