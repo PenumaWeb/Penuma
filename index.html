@@ -257,10 +257,14 @@ Episode 3: Decoding the Customer — What Really Drives Decisions
             View Preview
           </a>
         </div>
-        <a href="https://payhere.lk/pay" target="_blank" 
-           class="inline-block bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition w-max">
-          Pay RS 450 & Download
-        </a>
+        <button onclick="payNow()" class="inline-block bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700 transition w-max">Pay ₹400</button>
+<script>
+  async function payNow() {
+    const response = await fetch("https://penuma.netlify.app/.netlify/functions/createPayment");
+    const data = await response.json();
+    window.location.href = data.payment_url;
+  }
+</script>
       </div>
     </div>
   </div>
