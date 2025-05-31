@@ -28,6 +28,7 @@
   </div>
 
   <script>
+    // Declare variables first
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get("resource");
     const resource = atob(encoded);  // Decode Base64
@@ -44,6 +45,8 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
+            // You could save OTP here if API sends it (not recommended)
+            // expectedOTP = data.otp; // if you want to store OTP on client side
             document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
           } else {
             document.getElementById("status").textContent = "No OTP codes available or error occurred.";
