@@ -10,16 +10,21 @@
     <h1 class="text-2xl font-bold text-green-600 mb-4">✅ Payment Successful!</h1>
     <p class="text-gray-700 mb-3">Thank you for your purchase.</p>
 
-    <!-- Email input + button to request OTP -->
     <p class="text-gray-700 mb-2">Enter your email to get your OTP:</p>
     <input id="email-input" type="email" placeholder="Enter your email" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button id="request-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4">
-      📧 Get OTP via Email
+
+    <!-- More interactive OTP button -->
+    <button id="request-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4 flex items-center justify-center gap-2 w-full">
+      <span id="otp-btn-text">📧 Get OTP via Email</span>
+      <svg id="otp-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
     </button>
 
     <p class="text-gray-700 mb-4">Then enter your one-time password to unlock the download:</p>
     <input id="otp-input" type="text" placeholder="Enter OTP here" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button id="verify-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700">
+    <button id="verify-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 w-full">
       🔓 Unlock Download
     </button>
 
@@ -32,33 +37,64 @@
     const resource = params.get("resource") || "";
     const otpServiceURL = "https://script.google.com/macros/s/AKfycbyuQNgA9kKTs0zXAvy3IJN9ssz9743w05aTJUHH6TWsX6U7Ji-fEHDR_611F56RGER1Xg/exec";
 
+    function setOtpButtonState(isLoading) {
+      const button = document.getElementById("request-otp-btn");
+      const text = document.getElementById("otp-btn-text");
+      const spinner = document.getElementById("otp-spinner");
+
+      if (isLoading) {
+        button.disabled = true;
+        spinner.classList.remove("hidden");
+        text.textContent = "Sending OTP...";
+      } else {
+        button.disabled = false;
+        spinner.classList.add("hidden");
+        text.textContent = "📧 Get OTP via Email";
+      }
+    }
+
     function requestOTP() {
       const email = document.getElementById('email-input').value.trim();
+      const status = document.getElementById("status");
+
       if (!email) {
         alert('Please enter your email!');
         return;
       }
 
+      setOtpButtonState(true);
+      status.textContent = "";
+
       fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
+            status.textContent = "✅ OTP sent to your email!";
+            status.classList.remove("text-red-600");
+            status.classList.add("text-green-600");
           } else {
-            document.getElementById("status").textContent = "No OTP codes available or error occurred.";
+            status.textContent = "❌ No OTP codes available or error occurred.";
+            status.classList.remove("text-green-600");
+            status.classList.add("text-red-600");
           }
         })
         .catch(() => {
-          document.getElementById("status").textContent = "Failed to request OTP. Try again later.";
+          status.textContent = "❌ Failed to request OTP. Try again later.";
+          status.classList.remove("text-green-600");
+          status.classList.add("text-red-600");
+        })
+        .finally(() => {
+          setOtpButtonState(false);
         });
     }
 
     function verifyOTP() {
       const email = document.getElementById('email-input').value.trim();
       const userInput = document.getElementById("otp-input").value.trim();
+      const status = document.getElementById("status");
 
       if (!email || !userInput) {
-        document.getElementById("status").textContent = "Please enter your email and OTP.";
+        status.textContent = "Please enter your email and OTP.";
         return;
       }
 
@@ -85,16 +121,24 @@
               </a>
             `;
             document.getElementById("download-button").classList.remove("hidden");
-            document.getElementById("status").textContent = "✅ Code correct! Download unlocked.";
+            status.textContent = "✅ Code correct! Download unlocked.";
+            status.classList.remove("text-red-600");
+            status.classList.add("text-green-600");
           } else {
-            document.getElementById("status").textContent = "Error: resource not found.";
+            status.textContent = "Error: resource not found.";
+            status.classList.remove("text-green-600");
+            status.classList.add("text-red-600");
           }
         } else {
-          document.getElementById("status").textContent = "❌ Invalid code. Please try again.";
+          status.textContent = "❌ Invalid code. Please try again.";
+          status.classList.remove("text-green-600");
+          status.classList.add("text-red-600");
         }
       })
       .catch(() => {
-        document.getElementById("status").textContent = "Failed to verify OTP. Try again later.";
+        status.textContent = "❌ Failed to verify OTP. Try again later.";
+        status.classList.remove("text-green-600");
+        status.classList.add("text-red-600");
       });
     }
 
