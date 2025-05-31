@@ -70,6 +70,11 @@ nav a:hover{
   transition:0.7s;
 }
 
+nav a:visited {
+  color:red;
+  
+  }
+
 
 
 .hero-section {
