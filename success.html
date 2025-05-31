@@ -19,7 +19,7 @@
 
     <p class="text-gray-700 mb-4">Then enter your one-time password to unlock the download:</p>
     <input id="otp-input" type="text" placeholder="Enter OTP here" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button onclick="checkOTP()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700">
+    <button onclick="verifyOTP()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700">
       🔓 Unlock Download
     </button>
 
@@ -31,9 +31,7 @@
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get("resource");
     const resource = atob(encoded);  // Decode Base64
-    const otpServiceURL = "https://script.google.com/macros/s/AKfycbwbA0jpQBhF1cvRCgEzikHGCCIg20VoIeplv87f77WsX7ZYjnbfqFuf7XMhNgaSl-mXWQ/exec";
-
-    let expectedOTP = null;
+    const otpServiceURL = "https://script.google.com/macros/s/AKfycbyLQ1zn1M2JRcvdk41DkDw83yvAPshX7kmhH4w1gC8tuipclLJl7KasJRSULPgCsgk4uQ/exec";
 
     function requestOTP() {
       const email = document.getElementById('email-input').value.trim();
@@ -44,48 +42,61 @@
 
       fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
-      .then(data => {
-    if (data.success) {
-      document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
-      } else {
-        document.getElementById("status").textContent = "No OTP codes available or error occurred.";
-      }
-      })
-
+        .then(data => {
+          if (data.success) {
+            document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
+          } else {
+            document.getElementById("status").textContent = "No OTP codes available or error occurred.";
+          }
+        })
         .catch(() => {
           document.getElementById("status").textContent = "Failed to request OTP. Try again later.";
         });
     }
 
-    function checkOTP() {
+    function verifyOTP() {
+      const email = document.getElementById('email-input').value.trim();
       const userInput = document.getElementById("otp-input").value.trim();
-      if (!expectedOTP) {
-        document.getElementById("status").textContent = "Please request OTP first using your email.";
+
+      if (!email || !userInput) {
+        document.getElementById("status").textContent = "Please enter your email and OTP.";
         return;
       }
-      if (userInput === expectedOTP) {
-        const links = {
-          "grade-13-mockexam1-part1": "https://mega.nz/file/G1wnTBDQ#lmwfz8KxKpUo3q-Au9W37vcYe21MBzpLpy2A0nD_r60",
-          "grade-13-mockexam1-part2": "https://mega.nz/file/e1pAlSJL#VYNFswSsbxK9qMXSdnJngbMBjJDvsabUNYFhWttDTjw",
-          "grade-13-mockexam2-part2": "https://mega.nz/file/y9gAGSyZ#_uH2eapFeubZFIGoD8DvRbzK_0GTITPjVPwsY5ErZTw",
-          "accounting-o2": "https://mega.nz/file/KwJR3LCb#gCQTe9xDJluqkjQEC5tYQPm7JV0UmqFRQzKxW0rGy_E"
-        };
 
-        const link = links[resource];
-        if (link) {
-          document.getElementById("download-button").innerHTML = `
-            <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
-              📥 Download Now
-            </a>
-          `;
-          document.getElementById("download-button").classList.remove("hidden");
-          document.getElementById("status").textContent = "✅ Code correct! Download unlocked.";
+      fetch(otpServiceURL, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `email=${encodeURIComponent(email)}&resource=${encodeURIComponent(resource)}&otp=${encodeURIComponent(userInput)}`
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const links = {
+            "grade-13-mockexam1-part1": "https://mega.nz/file/G1wnTBDQ#lmwfz8KxKpUo3q-Au9W37vcYe21MBzpLpy2A0nD_r60",
+            "grade-13-mockexam1-part2": "https://mega.nz/file/e1pAlSJL#VYNFswSsbxK9qMXSdnJngbMBjJDvsabUNYFhWttDTjw",
+            "grade-13-mockexam2-part2": "https://mega.nz/file/y9gAGSyZ#_uH2eapFeubZFIGoD8DvRbzK_0GTITPjVPwsY5ErZTw",
+            "accounting-o2": "https://mega.nz/file/KwJR3LCb#gCQTe9xDJluqkjQEC5tYQPm7JV0UmqFRQzKxW0rGy_E"
+          };
+
+          const link = links[resource];
+          if (link) {
+            document.getElementById("download-button").innerHTML = `
+              <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
+                📥 Download Now
+              </a>
+            `;
+            document.getElementById("download-button").classList.remove("hidden");
+            document.getElementById("status").textContent = "✅ Code correct! Download unlocked.";
+          } else {
+            document.getElementById("status").textContent = "Error: resource not found.";
+          }
         } else {
-          document.getElementById("status").textContent = "Error: resource not found.";
+          document.getElementById("status").textContent = "❌ Invalid code. Please try again.";
         }
-      } else {
-        document.getElementById("status").textContent = "❌ Invalid code. Please try again.";
-      }
+      })
+      .catch(() => {
+        document.getElementById("status").textContent = "Failed to verify OTP. Try again later.";
+      });
     }
   </script>
 </body>
