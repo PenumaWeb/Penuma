@@ -29,8 +29,7 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const encoded = params.get("resource");
-    const resource = atob(encoded || "");
+    const resource = params.get("resource") || "";
     const otpServiceURL = "https://script.google.com/macros/s/AKfycbxZ8N43uwTeZnx9T3A7ljs5RgW9Sr30loW2dWx8iAEouEU3bi7i6UhneF5XozktAukweQ/exec";
 
     function requestOTP() {
@@ -99,7 +98,6 @@
       });
     }
 
-    // Attach event listeners AFTER variables are declared
     document.getElementById('request-otp-btn').addEventListener('click', requestOTP);
     document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
   </script>
