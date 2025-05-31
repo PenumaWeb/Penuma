@@ -31,7 +31,7 @@
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get("resource");
     const resource = atob(encoded);  // Decode Base64
-    const otpServiceURL = "https://script.google.com/macros/s/AKfycbyLQ1zn1M2JRcvdk41DkDw83yvAPshX7kmhH4w1gC8tuipclLJl7KasJRSULPgCsgk4uQ/exec";
+    const otpServiceURL = "https://script.google.com/macros/s/AKfycbxOHL-OUiweFTayXDG4upo_Rcq96-YTpRu7n5u4YB_YLlUkrDGo9QqEvLZJKW9nJtPerg/exec";
 
     function requestOTP() {
       const email = document.getElementById('email-input').value.trim();
