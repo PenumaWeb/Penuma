@@ -13,13 +13,13 @@
     <!-- Email input + button to request OTP -->
     <p class="text-gray-700 mb-2">Enter your email to get your OTP:</p>
     <input id="email-input" type="email" placeholder="Enter your email" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button onclick="requestOTP()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4">
+    <button id="request-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4">
       📧 Get OTP via Email
     </button>
 
     <p class="text-gray-700 mb-4">Then enter your one-time password to unlock the download:</p>
     <input id="otp-input" type="text" placeholder="Enter OTP here" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button onclick="verifyOTP()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700">
+    <button id="verify-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700">
       🔓 Unlock Download
     </button>
 
@@ -28,10 +28,9 @@
   </div>
 
   <script>
-    // Declare variables first
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get("resource");
-    const resource = atob(encoded);  // Decode Base64
+    const resource = atob(encoded || "");
     const otpServiceURL = "https://script.google.com/macros/s/AKfycbxZ8N43uwTeZnx9T3A7ljs5RgW9Sr30loW2dWx8iAEouEU3bi7i6UhneF5XozktAukweQ/exec";
 
     function requestOTP() {
@@ -45,8 +44,6 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            // You could save OTP here if API sends it (not recommended)
-            // expectedOTP = data.otp; // if you want to store OTP on client side
             document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
           } else {
             document.getElementById("status").textContent = "No OTP codes available or error occurred.";
@@ -101,6 +98,10 @@
         document.getElementById("status").textContent = "Failed to verify OTP. Try again later.";
       });
     }
+
+    // Attach event listeners AFTER variables are declared
+    document.getElementById('request-otp-btn').addEventListener('click', requestOTP);
+    document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
   </script>
 </body>
 </html>
