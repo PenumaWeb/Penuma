@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   headerLinks.forEach(link => {
     if (link.getAttribute("href") === currentHash) {
-      link.classList.add("text-blue-950", "font-semibold", "border-b-2", "border-blue-950");
+      link.classList.add("text-white", "font-semibold", "border-b-2", "border-white");
     }
   });
 
