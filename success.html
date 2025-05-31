@@ -44,14 +44,14 @@
 
       fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
-        .then(data => {
-          if (data.otp) {
-            expectedOTP = data.otp;
-            document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
-          } else {
-            document.getElementById("status").textContent = "No OTP codes available or error occurred.";
-          }
-        })
+      .then(data => {
+    if (data.success) {
+      document.getElementById("status").textContent = "OTP sent to your email! Please enter it below.";
+      } else {
+        document.getElementById("status").textContent = "No OTP codes available or error occurred.";
+      }
+      })
+
         .catch(() => {
           document.getElementById("status").textContent = "Failed to request OTP. Try again later.";
         });
