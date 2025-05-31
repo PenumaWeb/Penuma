@@ -70,7 +70,7 @@ nav a:hover{
   transition:0.7s;
 }
 
-nav a:visited {
+nav a:after {
   color:red;
   
   }
