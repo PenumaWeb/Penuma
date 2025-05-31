@@ -13,7 +13,6 @@
     <p class="text-gray-700 mb-2">Enter your email to get your OTP:</p>
     <input id="email-input" type="email" placeholder="Enter your email" class="border rounded px-3 py-2 mb-3 w-full" />
 
-    <!-- More interactive OTP button -->
     <button id="request-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4 flex items-center justify-center gap-2 w-full">
       <span id="otp-btn-text">📧 Get OTP via Email</span>
       <svg id="otp-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -32,142 +31,142 @@
     <div id="download-button" class="mt-6 hidden"></div>
   </div>
 
- <script>
-  const params = new URLSearchParams(window.location.search);
-  const resource = params.get("resource") || "";
-
-  if (!resource) {
-    alert("No resource specified. Please check the URL.");
-    // Optionally disable buttons to prevent errors
-    document.getElementById('request-otp-btn').disabled = true;
-    document.getElementById('verify-otp-btn').disabled = true;
-  }
-
-  const otpServiceURL = "https://script.google.com/macros/s/AKfycbwkfwW_J3T_c1Z-Q5Nkk-wc4QSM38H-EOajpDT7TxwVj8qqPpxlWc7wLTZepG_9B6VGvw/exec";
-
-  function setOtpButtonState(isLoading) {
-    const button = document.getElementById("request-otp-btn");
-    const text = document.getElementById("otp-btn-text");
-    const spinner = document.getElementById("otp-spinner");
-
-    if (isLoading) {
-      button.disabled = true;
-      spinner.classList.remove("hidden");
-      text.textContent = "Sending OTP...";
-    } else {
-      button.disabled = false;
-      spinner.classList.add("hidden");
-      text.textContent = "📧 Get OTP via Email";
-    }
-  }
-
-  function isValidEmail(email) {
-    return /\S+@\S+\.\S+/.test(email);
-  }
-
-  function requestOTP() {
-    const email = document.getElementById('email-input').value.trim();
-    const status = document.getElementById("status");
-
-    if (!email || !isValidEmail(email)) {
-      alert('Please enter a valid email!');
-      return;
-    }
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const resource = params.get("resource") || "";
 
     if (!resource) {
-      alert("Resource is missing. Cannot request OTP.");
-      return;
+      alert("No resource specified. Please check the URL.");
+      document.getElementById('request-otp-btn').disabled = true;
+      document.getElementById('verify-otp-btn').disabled = true;
     }
 
-    setOtpButtonState(true);
-    status.textContent = "";
+    // Your deployed Apps Script web app URL here:
+    const otpServiceURL = "https://script.google.com/macros/s/AKfycbwkfwW_J3T_c1Z-Q5Nkk-wc4QSM38H-EOajpDT7TxwVj8qqPpxlWc7wLTZepG_9B6VGvw/exec";
 
-    fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
+    function setOtpButtonState(isLoading) {
+      const button = document.getElementById("request-otp-btn");
+      const text = document.getElementById("otp-btn-text");
+      const spinner = document.getElementById("otp-spinner");
+
+      if (isLoading) {
+        button.disabled = true;
+        spinner.classList.remove("hidden");
+        text.textContent = "Sending OTP...";
+      } else {
+        button.disabled = false;
+        spinner.classList.add("hidden");
+        text.textContent = "📧 Get OTP via Email";
+      }
+    }
+
+    function isValidEmail(email) {
+      return /\S+@\S+\.\S+/.test(email);
+    }
+
+    function requestOTP() {
+      const email = document.getElementById('email-input').value.trim();
+      const status = document.getElementById("status");
+
+      if (!email || !isValidEmail(email)) {
+        alert('Please enter a valid email!');
+        return;
+      }
+
+      if (!resource) {
+        alert("Resource is missing. Cannot request OTP.");
+        return;
+      }
+
+      setOtpButtonState(true);
+      status.textContent = "";
+
+      fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(data => {
+          console.log("OTP request response:", data);
+          if (data.success) {
+            status.textContent = "✅ OTP sent to your email!";
+            status.classList.remove("text-red-600");
+            status.classList.add("text-green-600");
+          } else {
+            status.textContent = `❌ ${data.error || "No OTP codes available or error occurred."}`;
+            status.classList.remove("text-green-600");
+            status.classList.add("text-red-600");
+          }
+        })
+        .catch(() => {
+          status.textContent = "❌ Failed to request OTP. Try again later.";
+          status.classList.remove("text-green-600");
+          status.classList.add("text-red-600");
+        })
+        .finally(() => {
+          setOtpButtonState(false);
+        });
+    }
+
+    function verifyOTP() {
+      const email = document.getElementById('email-input').value.trim();
+      const userInput = document.getElementById("otp-input").value.trim();
+      const status = document.getElementById("status");
+
+      if (!email || !userInput) {
+        status.textContent = "Please enter your email and OTP.";
+        return;
+      }
+
+      if (!resource) {
+        status.textContent = "Resource is missing. Cannot verify OTP.";
+        return;
+      }
+
+      fetch(otpServiceURL, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `email=${encodeURIComponent(email)}&resource=${encodeURIComponent(resource)}&otp=${encodeURIComponent(userInput)}`
+      })
       .then(res => res.json())
       .then(data => {
-        console.log("OTP request response:", data);
+        console.log("OTP verify response:", data);
         if (data.success) {
-          status.textContent = "✅ OTP sent to your email!";
-          status.classList.remove("text-red-600");
-          status.classList.add("text-green-600");
+          const links = {
+            "grade-13-mockexam1-part1": "https://mega.nz/file/G1wnTBDQ#lmwfz8KxKpUo3q-Au9W37vcYe21MBzpLpy2A0nD_r60",
+            "grade-13-mockexam1-part2": "https://mega.nz/file/e1pAlSJL#VYNFswSsbxK9qMXSdnJngbMBjJDvsabUNYFhWttDTjw",
+            "grade-13-mockexam2-part2": "https://mega.nz/file/y9gAGSyZ#_uH2eapFeubZFIGoD8DvRbzK_0GTITPjVPwsY5ErZTw",
+            "accounting-o2": "https://mega.nz/file/KwJR3LCb#gCQTe9xDJluqkjQEC5tYQPm7JV0UmqFRQzKxW0rGy_E"
+          };
+
+          const link = links[resource];
+          if (link) {
+            document.getElementById("download-button").innerHTML = `
+              <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
+                📥 Download Now
+              </a>
+            `;
+            document.getElementById("download-button").classList.remove("hidden");
+            status.textContent = "✅ Code correct! Download unlocked.";
+            status.classList.remove("text-red-600");
+            status.classList.add("text-green-600");
+          } else {
+            status.textContent = "Error: resource not found.";
+            status.classList.remove("text-green-600");
+            status.classList.add("text-red-600");
+          }
         } else {
-          status.textContent = `❌ ${data.error || "No OTP codes available or error occurred."}`;
+          status.textContent = "❌ Invalid code. Please try again.";
           status.classList.remove("text-green-600");
           status.classList.add("text-red-600");
         }
       })
       .catch(() => {
-        status.textContent = "❌ Failed to request OTP. Try again later.";
+        status.textContent = "❌ Failed to verify OTP. Try again later.";
         status.classList.remove("text-green-600");
         status.classList.add("text-red-600");
-      })
-      .finally(() => {
-        setOtpButtonState(false);
       });
-  }
-
-  function verifyOTP() {
-    const email = document.getElementById('email-input').value.trim();
-    const userInput = document.getElementById("otp-input").value.trim();
-    const status = document.getElementById("status");
-
-    if (!email || !userInput) {
-      status.textContent = "Please enter your email and OTP.";
-      return;
     }
 
-    if (!resource) {
-      status.textContent = "Resource is missing. Cannot verify OTP.";
-      return;
-    }
-
-    fetch(otpServiceURL, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `email=${encodeURIComponent(email)}&resource=${encodeURIComponent(resource)}&otp=${encodeURIComponent(userInput)}`
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("OTP verify response:", data);
-      if (data.success) {
-        const links = {
-          "grade-13-mockexam1-part1": "https://mega.nz/file/G1wnTBDQ#lmwfz8KxKpUo3q-Au9W37vcYe21MBzpLpy2A0nD_r60",
-          "grade-13-mockexam1-part2": "https://mega.nz/file/e1pAlSJL#VYNFswSsbxK9qMXSdnJngbMBjJDvsabUNYFhWttDTjw",
-          "grade-13-mockexam2-part2": "https://mega.nz/file/y9gAGSyZ#_uH2eapFeubZFIGoD8DvRbzK_0GTITPjVPwsY5ErZTw",
-          "accounting-o2": "https://mega.nz/file/KwJR3LCb#gCQTe9xDJluqkjQEC5tYQPm7JV0UmqFRQzKxW0rGy_E"
-        };
-
-        const link = links[resource];
-        if (link) {
-          document.getElementById("download-button").innerHTML = `
-            <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
-              📥 Download Now
-            </a>
-          `;
-          document.getElementById("download-button").classList.remove("hidden");
-          status.textContent = "✅ Code correct! Download unlocked.";
-          status.classList.remove("text-red-600");
-          status.classList.add("text-green-600");
-        } else {
-          status.textContent = "Error: resource not found.";
-          status.classList.remove("text-green-600");
-          status.classList.add("text-red-600");
-        }
-      } else {
-        status.textContent = "❌ Invalid code. Please try again.";
-        status.classList.remove("text-green-600");
-        status.classList.add("text-red-600");
-      }
-    })
-    .catch(() => {
-      status.textContent = "❌ Failed to verify OTP. Try again later.";
-      status.classList.remove("text-green-600");
-      status.classList.add("text-red-600");
-    });
-  }
-
-  document.getElementById('request-otp-btn').addEventListener('click', requestOTP);
-  document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
-</script>
+    document.getElementById('request-otp-btn').addEventListener('click', requestOTP);
+    document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
+  </script>
 </body>
 </html>
