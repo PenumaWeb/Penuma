@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Payment Successful</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
 <body class="bg-green-50 flex items-center justify-center h-screen">
   <div class="text-center bg-white p-10 rounded shadow-md max-w-md">
@@ -144,6 +145,14 @@
               </a>
             `;
             document.getElementById("download-button").classList.remove("hidden");
+
+            // 🎉 Confetti trigger
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+
             status.textContent = "✅ Code correct! Download unlocked.";
             status.classList.remove("text-red-600");
             status.classList.add("text-green-600");
