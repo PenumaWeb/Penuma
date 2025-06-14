@@ -42,7 +42,7 @@
       document.getElementById('verify-otp-btn').disabled = true;
     }
 
-    const otpServiceURL = "https://script.google.com/macros/s/AKfycbzIkJ-0mc09j4zjM_WpyMEVajRj0BTWdiYYDZ9M5-5b8a0U4-m1rKc7SaJWJMXi69hP/exec";
+    const otpServiceURL = "https://script.google.com/macros/s/AKfycbzffMghM3_Qoj9onOzbuS-WOTMjC5-YkeWLYj9z4E05SfVpcfxAKN9FrIR4IZOw0UoE/exec";
 
     function setOtpButtonState(isLoading) {
       const button = document.getElementById("request-otp-btn");
@@ -64,9 +64,39 @@
       return /\S+@\S+\.\S+/.test(email);
     }
 
+    // Global callback for JSONP response from Apps Script
+    function handleResponse(data) {
+      const status = document.getElementById("status");
+      const tempPassDiv = document.getElementById("temp-password-display");
+
+      if (data.success) {
+        status.textContent = "✅ OTP sent to your email!";
+        status.classList.remove("text-red-600");
+        status.classList.add("text-green-600");
+
+        if (data.tempPassword) {
+          tempPassDiv.textContent = `Temporary Password: ${data.tempPassword}`;
+          tempPassDiv.classList.remove("hidden");
+        } else {
+          tempPassDiv.textContent = "";
+          tempPassDiv.classList.add("hidden");
+        }
+      } else {
+        status.textContent = `❌ ${data.error || "No OTP codes available or error occurred."}`;
+        status.classList.remove("text-green-600");
+        status.classList.add("text-red-600");
+
+        tempPassDiv.textContent = "";
+        tempPassDiv.classList.add("hidden");
+      }
+
+      setOtpButtonState(false);
+    }
+
     function requestOTP() {
       const email = document.getElementById('email-input').value.trim();
       const status = document.getElementById("status");
+      const tempPassDiv = document.getElementById("temp-password-display");
 
       if (!email || !isValidEmail(email)) {
         alert('Please enter a valid email!');
@@ -80,31 +110,25 @@
 
       setOtpButtonState(true);
       status.textContent = "";
-      document.getElementById("temp-password-display").classList.add("hidden");
-      document.getElementById("temp-password-display").textContent = "";
+      tempPassDiv.classList.add("hidden");
+      tempPassDiv.textContent = "";
 
-      fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
-        .then(res => res.json())
-        .then(data => {
-          console.log("OTP request response:", data);
-          if (data.success) {
-            status.textContent = "✅ OTP sent to your email!";
-            status.classList.remove("text-red-600");
-            status.classList.add("text-green-600");
-          } else {
-            status.textContent = `❌ ${data.error || "No OTP codes available or error occurred."}`;
-            status.classList.remove("text-green-600");
-            status.classList.add("text-red-600");
-          }
-        })
-        .catch(() => {
-          status.textContent = "❌ Failed to request OTP. Try again later.";
-          status.classList.remove("text-green-600");
-          status.classList.add("text-red-600");
-        })
-        .finally(() => {
-          setOtpButtonState(false);
-        });
+      // Remove any previous JSONP script tags to avoid duplicates
+      const oldScript = document.getElementById("jsonp-script");
+      if (oldScript) oldScript.remove();
+
+      // Create a new script tag for JSONP
+      const script = document.createElement("script");
+      script.id = "jsonp-script";
+      script.src = `${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}&callback=handleResponse`;
+      script.onerror = () => {
+        status.textContent = "❌ Failed to request OTP. Try again later.";
+        status.classList.remove("text-green-600");
+        status.classList.add("text-red-600");
+        tempPassDiv.classList.add("hidden");
+        setOtpButtonState(false);
+      };
+      document.body.appendChild(script);
     }
 
     function verifyOTP() {
