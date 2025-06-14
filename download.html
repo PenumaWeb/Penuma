@@ -60,29 +60,35 @@
   };
 
   verifyBtn.addEventListener("click", () => {
-    const enteredOtp = otpInput.value.trim();
-    if (!enteredOtp) {
-      statusEl.textContent = "Please enter the OTP.";
-      statusEl.style.color = "red";
-      return;
-    }
+  const enteredOtp = otpInput.value.trim();
+  if (!enteredOtp) {
+    statusEl.textContent = "Please enter the OTP.";
+    statusEl.style.color = "red";
+    return;
+  }
 
-    statusEl.textContent = "Verifying OTP...";
-    statusEl.style.color = "black";
-    verifyBtn.disabled = true;
+  statusEl.textContent = "Verifying OTP...";
+  statusEl.style.color = "black";
+  verifyBtn.disabled = true;
 
-    const callbackName = "otpCallback_" + Math.floor(Math.random() * 1000000);
-    window[callbackName] = function (data) {
+  fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "verifyTempPassword",
+      tempPassword: enteredOtp,
+      resourceName: resource,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
       if (data.success) {
         statusEl.textContent = "OTP verified! Starting download...";
         statusEl.style.color = "green";
-
         const downloadUrl = resourceLinks[resource];
         if (downloadUrl) {
-          // Clean up
-          delete window[callbackName];
-          script.remove();
-
           window.location.href = downloadUrl;
         } else {
           statusEl.textContent = "Download link not found for this resource.";
@@ -93,10 +99,14 @@
         statusEl.textContent = data.message || "Invalid OTP. Please try again.";
         statusEl.style.color = "red";
         verifyBtn.disabled = false;
-        delete window[callbackName];
-        script.remove();
       }
-    };
+    })
+    .catch((error) => {
+      statusEl.textContent = "Server error: " + error.message;
+      statusEl.style.color = "red";
+      verifyBtn.disabled = false;
+    });
+});
 
     const script = document.createElement("script");
     script.src =
