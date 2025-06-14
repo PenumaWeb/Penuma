@@ -29,7 +29,9 @@
     </button>
 
     <p id="status" class="mt-4 text-sm text-gray-600"></p>
-    <div id="download-button" class="mt-6 hidden"></div>
+
+    <!-- Updated: Show temp password here instead of download link -->
+    <div id="temp-password-display" class="mt-6 hidden p-4 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded font-mono text-lg select-all"></div>
   </div>
 
   <script>
@@ -81,6 +83,8 @@
 
       setOtpButtonState(true);
       status.textContent = "";
+      document.getElementById("temp-password-display").classList.add("hidden");
+      document.getElementById("temp-password-display").textContent = "";
 
       fetch(`${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}`)
         .then(res => res.json())
@@ -110,6 +114,7 @@
       const email = document.getElementById('email-input').value.trim();
       const userInput = document.getElementById("otp-input").value.trim();
       const status = document.getElementById("status");
+      const tempPassDiv = document.getElementById("temp-password-display");
 
       if (!email || !userInput) {
         status.textContent = "Please enter your email and OTP.";
@@ -121,6 +126,10 @@
         return;
       }
 
+      status.textContent = "";
+      tempPassDiv.classList.add("hidden");
+      tempPassDiv.textContent = "";
+
       fetch(otpServiceURL, {
         method: "POST",
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -130,39 +139,25 @@
       .then(data => {
         console.log("OTP verify response:", data);
         if (data.success) {
-          const links = {
-            "grade-13-mockexam1-part1": "https://mega.nz/file/G1wnTBDQ#lmwfz8KxKpUo3q-Au9W37vcYe21MBzpLpy2A0nD_r60",
-            "grade-13-mockexam1-part2": "https://mega.nz/file/e1pAlSJL#VYNFswSsbxK9qMXSdnJngbMBjJDvsabUNYFhWttDTjw",
-            "grade-13-mockexam2-part2": "https://mega.nz/file/y9gAGSyZ#_uH2eapFeubZFIGoD8DvRbzK_0GTITPjVPwsY5ErZTw",
-            "grade-13-mockexam3-part1": "https://mega.nz/file/OwZ23ZJT#f3lxElnsV6jjEwHRaT-CQp0-jM3V7SoLDFtbk9gRQ5M",
-          };
-
-          const link = links[resource];
-          if (link) {
-            document.getElementById("download-button").innerHTML = `
-              <a href="${link}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-block">
-                📥 Download Now
-              </a>
-            `;
-            document.getElementById("download-button").classList.remove("hidden");
-
-            // 🎉 Confetti trigger
+          // Show the temp password from backend
+          if (data.tempPassword) {
+            tempPassDiv.textContent = `Your Temporary Password: ${data.tempPassword}`;
+            tempPassDiv.classList.remove("hidden");
             confetti({
               particleCount: 150,
               spread: 70,
               origin: { y: 0.6 }
             });
-
-            status.textContent = "✅ Code correct! Download unlocked.";
+            status.textContent = "✅ OTP correct! Use the temporary password above to access your resource.";
             status.classList.remove("text-red-600");
             status.classList.add("text-green-600");
           } else {
-            status.textContent = "Error: resource not found.";
-            status.classList.remove("text-green-600");
-            status.classList.add("text-red-600");
+            status.textContent = "✅ OTP correct, but no temporary password received.";
+            status.classList.remove("text-red-600");
+            status.classList.add("text-green-600");
           }
         } else {
-          status.textContent = "❌ Invalid code. Please try again.";
+          status.textContent = "❌ Invalid OTP or email. Please try again.";
           status.classList.remove("text-green-600");
           status.classList.add("text-red-600");
         }
