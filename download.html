@@ -32,86 +32,82 @@
 
     <p id="status" class="mt-4 text-sm"></p>
 
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const resource = params.get("resource");
+   <script>
+  const params = new URLSearchParams(window.location.search);
+  const resource = params.get("resource");
 
-      const resourceNameEl = document.getElementById("resource-name");
-      const statusEl = document.getElementById("status");
-      const otpInput = document.getElementById("otp-input");
-      const verifyBtn = document.getElementById("verify-btn");
+  const resourceNameEl = document.getElementById("resource-name");
+  const statusEl = document.getElementById("status");
+  const otpInput = document.getElementById("otp-input");
+  const verifyBtn = document.getElementById("verify-btn");
 
-      if (!resource) {
-        resourceNameEl.textContent = "Error: No resource specified.";
-        verifyBtn.disabled = true;
-      } else {
-        resourceNameEl.textContent = `Resource: ${resource}`;
-      }
+  if (!resource) {
+    resourceNameEl.textContent = "Error: No resource specified.";
+    verifyBtn.disabled = true;
+  } else {
+    resourceNameEl.textContent = `Resource: ${resource}`;
+  }
 
-      const resourceLinks = {
-        "grade-13-mockexam1-part1":
-          "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-        "grade-13-mockexam1-part2":
-          "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-        "grade-13-mockexam2-part2":
-          "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-        "grade-13-mockexam3-part1":
-          "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
-      };
+  const resourceLinks = {
+    "grade-13-mockexam1-part1":
+      "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
+    "grade-13-mockexam1-part2":
+      "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
+    "grade-13-mockexam2-part2":
+      "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
+    "grade-13-mockexam3-part1":
+      "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
+  };
 
-      verifyBtn.addEventListener("click", async () => {
-        const enteredOtp = otpInput.value.trim();
-        if (!enteredOtp) {
-          statusEl.textContent = "Please enter the OTP.";
-          statusEl.style.color = "red";
-          return;
-        }
+  verifyBtn.addEventListener("click", () => {
+    const enteredOtp = otpInput.value.trim();
+    if (!enteredOtp) {
+      statusEl.textContent = "Please enter the OTP.";
+      statusEl.style.color = "red";
+      return;
+    }
 
-        statusEl.textContent = "Verifying OTP...";
-        statusEl.style.color = "black";
-        verifyBtn.disabled = true;
+    statusEl.textContent = "Verifying OTP...";
+    statusEl.style.color = "black";
+    verifyBtn.disabled = true;
 
-        try {
-          const response = await fetch("https://script.google.com/macros/s/AKfycbzIsEPLGrNBRuqX6fmwnaNbjBnmSdj99K8V1JCCzt1w4R0iTczSo3YYXTg7IQEMXvPx/exec", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              action: "verifyTempPassword",
-              tempPassword: enteredOtp,
-              resourceName: resource,
-            }),
-          });
+    const callbackName = "otpCallback_" + Math.floor(Math.random() * 1000000);
+    window[callbackName] = function (data) {
+      if (data.success) {
+        statusEl.textContent = "OTP verified! Starting download...";
+        statusEl.style.color = "green";
 
-          const data = await response.json();
+        const downloadUrl = resourceLinks[resource];
+        if (downloadUrl) {
+          // Clean up
+          delete window[callbackName];
+          script.remove();
 
-          if (data.success) {
-            statusEl.textContent = "OTP verified! Starting download...";
-            statusEl.style.color = "green";
-
-            const downloadUrl = resourceLinks[resource];
-
-            if (downloadUrl) {
-              // Start download
-              window.location.href = downloadUrl;
-            } else {
-              statusEl.textContent = "Download link not found for this resource.";
-              statusEl.style.color = "red";
-              verifyBtn.disabled = false;
-            }
-          } else {
-            statusEl.textContent = data.message || "Invalid OTP. Please try again.";
-            statusEl.style.color = "red";
-            verifyBtn.disabled = false;
-          }
-        } catch (err) {
-          statusEl.textContent = "Error verifying OTP. Please try again later.";
+          window.location.href = downloadUrl;
+        } else {
+          statusEl.textContent = "Download link not found for this resource.";
           statusEl.style.color = "red";
           verifyBtn.disabled = false;
-          console.error(err);
         }
-      });
-    </script>
-  </body>
-</html>
+      } else {
+        statusEl.textContent = data.message || "Invalid OTP. Please try again.";
+        statusEl.style.color = "red";
+        verifyBtn.disabled = false;
+        delete window[callbackName];
+        script.remove();
+      }
+    };
+
+    const script = document.createElement("script");
+    script.src =
+      "https://script.google.com/macros/s/AKfycbzIsEPLGrNBRuqX6fmwnaNbjBnmSdj99K8V1JCCzt1w4R0iTczSo3YYXTg7IQEMXvPx/exec" +
+      "?action=verifyTempPassword&tempPassword=" +
+      encodeURIComponent(enteredOtp) +
+      "&resourceName=" +
+      encodeURIComponent(resource) +
+      "&callback=" +
+      callbackName;
+
+    document.body.appendChild(script);
+  });
+</script>
