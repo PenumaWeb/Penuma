@@ -29,8 +29,6 @@
     </button>
 
     <p id="status" class="mt-4 text-sm text-gray-600"></p>
-
-    <!-- Updated: Show temp password here instead of download link -->
     <div id="temp-password-display" class="mt-6 hidden p-4 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded font-mono text-lg select-all"></div>
   </div>
 
@@ -44,7 +42,6 @@
       document.getElementById('verify-otp-btn').disabled = true;
     }
 
-    // Your deployed Apps Script web app URL here:
     const otpServiceURL = "https://script.google.com/macros/s/AKfycbyZ4l6CPFwyr9XLFM8aSnS6vMDhYDXWSdfnzdXPKtWSb84URxWIPtxi4m08hY72ebGZ/exec";
 
     function setOtpButtonState(isLoading) {
@@ -139,18 +136,20 @@
       .then(data => {
         console.log("OTP verify response:", data);
         if (data.success) {
-          // Show the temp password from backend
           if (data.tempPassword) {
-            tempPassDiv.textContent = `Your Temporary Password: ${data.tempPassword}`;
-            tempPassDiv.classList.remove("hidden");
+            localStorage.setItem("tempPassword", data.tempPassword);
             confetti({
               particleCount: 150,
               spread: 70,
               origin: { y: 0.6 }
             });
-            status.textContent = "✅ OTP correct! Use the temporary password above to access your resource.";
+            status.textContent = "✅ OTP correct! Redirecting to download page...";
             status.classList.remove("text-red-600");
             status.classList.add("text-green-600");
+
+            setTimeout(() => {
+              window.location.href = `download.html?resource=${encodeURIComponent(resource)}`;
+            }, 2000);
           } else {
             status.textContent = "✅ OTP correct, but no temporary password received.";
             status.classList.remove("text-red-600");
