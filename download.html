@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Download Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="p-6 bg-gray-100 min-h-screen flex flex-col items-center justify-center"
+  >
+    <h1 class="text-2xl font-bold mb-4">Download Your Resource</h1>
+
+    <p id="resource-name" class="mb-4 text-lg"></p>
+
+    <p>
+      Please enter the temporary password (OTP) you received to unlock the
+      download:
+    </p>
+    <input
+      id="otp-input"
+      type="text"
+      class="border p-2 rounded mb-4"
+      placeholder="Enter OTP"
+    />
+
+    <button
+      id="verify-btn"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Verify OTP & Download
+    </button>
+
+    <p id="status" class="mt-4 text-sm"></p>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const resource = params.get("resource");
+      const storedTempPassword = localStorage.getItem("tempPassword");
+
+      const resourceNameEl = document.getElementById("resource-name");
+      const statusEl = document.getElementById("status");
+      const otpInput = document.getElementById("otp-input");
+      const verifyBtn = document.getElementById("verify-btn");
+
+      if (!resource) {
+        resourceNameEl.textContent = "Error: No resource specified.";
+        verifyBtn.disabled = true;
+      } else {
+        resourceNameEl.textContent = `Resource: ${resource}`;
+      }
+
+      verifyBtn.addEventListener("click", () => {
+        const enteredOtp = otpInput.value.trim();
+        if (!enteredOtp) {
+          statusEl.textContent = "Please enter the OTP.";
+          statusEl.style.color = "red";
+          return;
+        }
+
+        if (enteredOtp === storedTempPassword) {
+          statusEl.textContent = "OTP verified! Starting download...";
+          statusEl.style.color = "green";
+
+          // Your resource URLs can be mapped here by resource name
+          const resourceLinks = {
+            "example-file":
+              "https://drive.google.com/uc?export=download&id=FILE_ID1",
+            "another-file":
+              "https://drive.google.com/uc?export=download&id=FILE_ID2",
+            // add more as needed
+          };
+
+          const downloadUrl = resourceLinks[resource];
+
+          if (downloadUrl) {
+            // Clear temp password after use (optional)
+            localStorage.removeItem("tempPassword");
+
+            // Start download
+            window.location.href = downloadUrl;
+          } else {
+            statusEl.textContent = "Download link not found for this resource.";
+            statusEl.style.color = "red";
+          }
+        } else {
+          statusEl.textContent = "Invalid OTP. Please try again.";
+          statusEl.style.color = "red";
+        }
+      });
+    </script>
+  </body>
+</html>
