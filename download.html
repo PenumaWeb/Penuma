@@ -35,7 +35,6 @@
     <script>
       const params = new URLSearchParams(window.location.search);
       const resource = params.get("resource");
-      const storedTempPassword = localStorage.getItem("tempPassword");
 
       const resourceNameEl = document.getElementById("resource-name");
       const statusEl = document.getElementById("status");
@@ -49,7 +48,18 @@
         resourceNameEl.textContent = `Resource: ${resource}`;
       }
 
-      verifyBtn.addEventListener("click", () => {
+      const resourceLinks = {
+        "grade-13-mockexam1-part1":
+          "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
+        "grade-13-mockexam1-part2":
+          "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
+        "grade-13-mockexam2-part2":
+          "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
+        "grade-13-mockexam3-part1":
+          "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
+      };
+
+      verifyBtn.addEventListener("click", async () => {
         const enteredOtp = otpInput.value.trim();
         if (!enteredOtp) {
           statusEl.textContent = "Please enter the OTP.";
@@ -57,37 +67,49 @@
           return;
         }
 
-        if (enteredOtp === storedTempPassword) {
-          statusEl.textContent = "OTP verified! Starting download...";
-          statusEl.style.color = "green";
+        statusEl.textContent = "Verifying OTP...";
+        statusEl.style.color = "black";
+        verifyBtn.disabled = true;
 
-          // Your resource URLs can be mapped here by resource name
-          const resourceLinks = {
-            "grade-13-mockexam1-part1":
-              "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-            "grade-13-mockexam1-part2":
-              "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-           "grade-13-mockexam2-part2":
-              "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-            "grade-13-mockexam3-part1":
-              "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
-          };
+        try {
+          const response = await fetch("YOUR_BACKEND_URL", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              action: "verifyTempPassword",
+              tempPassword: enteredOtp,
+              resourceName: resource,
+            }),
+          });
 
-          const downloadUrl = resourceLinks[resource];
+          const data = await response.json();
 
-          if (downloadUrl) {
-            // Clear temp password after use (optional)
-            localStorage.removeItem("tempPassword");
+          if (data.success) {
+            statusEl.textContent = "OTP verified! Starting download...";
+            statusEl.style.color = "green";
 
-            // Start download
-            window.location.href = downloadUrl;
+            const downloadUrl = resourceLinks[resource];
+
+            if (downloadUrl) {
+              // Start download
+              window.location.href = downloadUrl;
+            } else {
+              statusEl.textContent = "Download link not found for this resource.";
+              statusEl.style.color = "red";
+              verifyBtn.disabled = false;
+            }
           } else {
-            statusEl.textContent = "Download link not found for this resource.";
+            statusEl.textContent = data.message || "Invalid OTP. Please try again.";
             statusEl.style.color = "red";
+            verifyBtn.disabled = false;
           }
-        } else {
-          statusEl.textContent = "Invalid OTP. Please try again.";
+        } catch (err) {
+          statusEl.textContent = "Error verifying OTP. Please try again later.";
           statusEl.style.color = "red";
+          verifyBtn.disabled = false;
+          console.error(err);
         }
       });
     </script>
