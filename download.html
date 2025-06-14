@@ -32,92 +32,94 @@
 
     <p id="status" class="mt-4 text-sm"></p>
 
-   <script>
-  const params = new URLSearchParams(window.location.search);
-  const resource = params.get("resource");
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const resource = params.get("resource");
 
-  const resourceNameEl = document.getElementById("resource-name");
-  const statusEl = document.getElementById("status");
-  const otpInput = document.getElementById("otp-input");
-  const verifyBtn = document.getElementById("verify-btn");
+      const resourceNameEl = document.getElementById("resource-name");
+      const statusEl = document.getElementById("status");
+      const otpInput = document.getElementById("otp-input");
+      const verifyBtn = document.getElementById("verify-btn");
 
-  if (!resource) {
-    resourceNameEl.textContent = "Error: No resource specified.";
-    verifyBtn.disabled = true;
-  } else {
-    resourceNameEl.textContent = `Resource: ${resource}`;
-  }
+      if (!resource) {
+        resourceNameEl.textContent = "Error: No resource specified.";
+        verifyBtn.disabled = true;
+      } else {
+        resourceNameEl.textContent = `Resource: ${resource}`;
+      }
 
-  const resourceLinks = {
-    "grade-13-mockexam1-part1":
-      "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-    "grade-13-mockexam1-part2":
-      "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-    "grade-13-mockexam2-part2":
-      "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-    "grade-13-mockexam3-part1":
-      "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
-  };
+      const resourceLinks = {
+        "grade-13-mockexam1-part1":
+          "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
+        "grade-13-mockexam1-part2":
+          "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
+        "grade-13-mockexam2-part2":
+          "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
+        "grade-13-mockexam3-part1":
+          "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
+      };
 
-  verifyBtn.addEventListener("click", () => {
-  const enteredOtp = otpInput.value.trim();
-  if (!enteredOtp) {
-    statusEl.textContent = "Please enter the OTP.";
-    statusEl.style.color = "red";
-    return;
-  }
+      verifyBtn.addEventListener("click", () => {
+        const enteredOtp = otpInput.value.trim();
+        if (!enteredOtp) {
+          statusEl.textContent = "Please enter the OTP.";
+          statusEl.style.color = "red";
+          return;
+        }
 
-  statusEl.textContent = "Verifying OTP...";
-  statusEl.style.color = "black";
-  verifyBtn.disabled = true;
+        statusEl.textContent = "Verifying OTP...";
+        statusEl.style.color = "black";
+        verifyBtn.disabled = true;
 
-  fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      action: "verifyTempPassword",
-      tempPassword: enteredOtp,
-      resourceName: resource,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        statusEl.textContent = "OTP verified! Starting download...";
-        statusEl.style.color = "green";
-        const downloadUrl = resourceLinks[resource];
-        if (downloadUrl) {
-          window.location.href = downloadUrl;
-        } else {
-          statusEl.textContent = "Download link not found for this resource.";
+        // Use JSONP to call your Google Apps Script - change YOUR_SCRIPT_ID below to your real script ID
+        const callbackName = "handleVerifyResponse";
+
+        // Clean any previous script tags
+        const oldScript = document.getElementById("jsonp-verify");
+        if (oldScript) oldScript.remove();
+
+        // Define callback function globally
+        window[callbackName] = function (data) {
+          if (data.success) {
+            statusEl.textContent = "OTP verified! Starting download...";
+            statusEl.style.color = "green";
+
+            const downloadUrl = resourceLinks[resource];
+            if (downloadUrl) {
+              window.location.href = downloadUrl;
+            } else {
+              statusEl.textContent = "Download link not found for this resource.";
+              statusEl.style.color = "red";
+              verifyBtn.disabled = false;
+            }
+          } else {
+            statusEl.textContent = data.message || "Invalid OTP. Please try again.";
+            statusEl.style.color = "red";
+            verifyBtn.disabled = false;
+          }
+        };
+
+        // Create script tag for JSONP
+        const script = document.createElement("script");
+        script.id = "jsonp-verify";
+        script.src =
+          "https://script.google.com/macros/s/AKfycbzz9_gWWTpNwcDn6ismDAoKVRH-pKjlGcDz319GSivRfVnZMyRXoyJJcfFZrpzASPeZ/exec" +
+          "?action=verifyTempPassword" +
+          "&tempPassword=" +
+          encodeURIComponent(enteredOtp) +
+          "&resourceName=" +
+          encodeURIComponent(resource) +
+          "&callback=" +
+          callbackName;
+
+        script.onerror = () => {
+          statusEl.textContent = "Server error during verification. Please try again.";
           statusEl.style.color = "red";
           verifyBtn.disabled = false;
-        }
-      } else {
-        statusEl.textContent = data.message || "Invalid OTP. Please try again.";
-        statusEl.style.color = "red";
-        verifyBtn.disabled = false;
-      }
-    })
-    .catch((error) => {
-      statusEl.textContent = "Server error: " + error.message;
-      statusEl.style.color = "red";
-      verifyBtn.disabled = false;
-    });
-});
+        };
 
-    const script = document.createElement("script");
-    script.src =
-      "https://script.google.com/macros/s/AKfycbzz9_gWWTpNwcDn6ismDAoKVRH-pKjlGcDz319GSivRfVnZMyRXoyJJcfFZrpzASPeZ/exec" +
-      "?action=verifyTempPassword&tempPassword=" +
-      encodeURIComponent(enteredOtp) +
-      "&resourceName=" +
-      encodeURIComponent(resource) +
-      "&callback=" +
-      callbackName;
-
-    document.body.appendChild(script);
-  });
-</script>
+        document.body.appendChild(script);
+      });
+    </script>
+  </body>
+</html>
