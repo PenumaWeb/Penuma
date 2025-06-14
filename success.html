@@ -6,40 +6,75 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 </head>
-<body class="bg-green-50 flex items-center justify-center h-screen">
-  <div class="text-center bg-white p-10 rounded shadow-md max-w-md">
+<body class="bg-green-50 flex items-center justify-center min-h-screen p-4">
+  <div class="text-center bg-white p-10 rounded shadow-md max-w-md w-full">
     <h1 class="text-2xl font-bold text-green-600 mb-4">✅ Payment Successful!</h1>
     <p class="text-gray-700 mb-3">Thank you for your purchase.</p>
 
     <p class="text-gray-700 mb-2">Enter your email to get your OTP:</p>
-    <input id="email-input" type="email" placeholder="Enter your email" class="border rounded px-3 py-2 mb-3 w-full" />
+    <input
+      id="email-input"
+      type="email"
+      placeholder="Enter your email"
+      class="border rounded px-3 py-2 mb-3 w-full"
+      autocomplete="email"
+      required
+    />
 
-    <button id="request-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4 flex items-center justify-center gap-2 w-full">
+    <button
+      id="request-otp-btn"
+      class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 mb-4 flex items-center justify-center gap-2 w-full"
+      aria-live="polite"
+      aria-busy="false"
+    >
       <span id="otp-btn-text">📧 Get OTP via Email</span>
-      <svg id="otp-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <svg
+        id="otp-spinner"
+        class="animate-spin h-5 w-5 text-white hidden"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        role="img"
+        aria-hidden="true"
+      >
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
       </svg>
     </button>
 
-    <p class="text-gray-700 mb-4">Then enter your one-time password to unlock the download:</p>
-    <input id="otp-input" type="text" placeholder="Enter OTP here" class="border rounded px-3 py-2 mb-3 w-full" />
-    <button id="verify-otp-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 w-full">
+    <p class="text-gray-700 mb-2">Then enter your one-time password to unlock the download:</p>
+    <input
+      id="otp-input"
+      type="text"
+      placeholder="Enter OTP here"
+      class="border rounded px-3 py-2 mb-3 w-full"
+      autocomplete="one-time-code"
+      required
+    />
+    <button
+      id="verify-otp-btn"
+      class="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 w-full"
+    >
       🔓 Unlock Download
     </button>
 
-    <p id="status" class="mt-4 text-sm text-gray-600"></p>
-    <div id="temp-password-display" class="mt-6 hidden p-4 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded font-mono text-lg select-all"></div>
+    <p id="status" class="mt-4 text-sm text-gray-600 min-h-[1.25rem]" role="alert" aria-live="assertive"></p>
+    <div
+      id="temp-password-display"
+      class="mt-6 hidden p-4 bg-yellow-100 border border-yellow-400 text-yellow-900 rounded font-mono text-lg select-all"
+      tabindex="0"
+    ></div>
   </div>
 
   <script>
+    // Read resource from URL query param
     const params = new URLSearchParams(window.location.search);
     const resource = params.get("resource") || "";
 
     if (!resource) {
       alert("No resource specified. Please check the URL.");
-      document.getElementById('request-otp-btn').disabled = true;
-      document.getElementById('verify-otp-btn').disabled = true;
+      document.getElementById("request-otp-btn").disabled = true;
+      document.getElementById("verify-otp-btn").disabled = true;
     }
 
     const otpServiceURL = "https://script.google.com/macros/s/AKfycbxsuSC2Z438a_eJuyiAj0xl6lYKYoV_IPvRJQKLv9EkXZA3wxYQSZee9kmge9FE3c-Y/exec";
@@ -51,10 +86,12 @@
 
       if (isLoading) {
         button.disabled = true;
+        button.setAttribute("aria-busy", "true");
         spinner.classList.remove("hidden");
         text.textContent = "Sending OTP...";
       } else {
         button.disabled = false;
+        button.setAttribute("aria-busy", "false");
         spinner.classList.add("hidden");
         text.textContent = "📧 Get OTP via Email";
       }
@@ -77,6 +114,7 @@
         if (data.tempPassword) {
           tempPassDiv.textContent = `Temporary Password: ${data.tempPassword}`;
           tempPassDiv.classList.remove("hidden");
+          tempPassDiv.focus();
         } else {
           tempPassDiv.textContent = "";
           tempPassDiv.classList.add("hidden");
@@ -94,12 +132,12 @@
     }
 
     function requestOTP() {
-      const email = document.getElementById('email-input').value.trim();
+      const email = document.getElementById("email-input").value.trim();
       const status = document.getElementById("status");
       const tempPassDiv = document.getElementById("temp-password-display");
 
       if (!email || !isValidEmail(email)) {
-        alert('Please enter a valid email!');
+        alert("Please enter a valid email!");
         return;
       }
 
@@ -120,7 +158,7 @@
       // Create a new script tag for JSONP
       const script = document.createElement("script");
       script.id = "jsonp-script";
-      script.src = `${otpServiceURL}?resource=${resource}&email=${encodeURIComponent(email)}&callback=handleResponse`;
+      script.src = `${otpServiceURL}?resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&callback=handleResponse`;
       script.onerror = () => {
         status.textContent = "❌ Failed to request OTP. Try again later.";
         status.classList.remove("text-green-600");
@@ -132,18 +170,22 @@
     }
 
     function verifyOTP() {
-      const email = document.getElementById('email-input').value.trim();
+      const email = document.getElementById("email-input").value.trim();
       const userInput = document.getElementById("otp-input").value.trim();
       const status = document.getElementById("status");
       const tempPassDiv = document.getElementById("temp-password-display");
 
       if (!email || !userInput) {
         status.textContent = "Please enter your email and OTP.";
+        status.classList.remove("text-green-600");
+        status.classList.add("text-red-600");
         return;
       }
 
       if (!resource) {
         status.textContent = "Resource is missing. Cannot verify OTP.";
+        status.classList.remove("text-green-600");
+        status.classList.add("text-red-600");
         return;
       }
 
@@ -153,47 +195,46 @@
 
       fetch(otpServiceURL, {
         method: "POST",
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `email=${encodeURIComponent(email)}&resource=${encodeURIComponent(resource)}&otp=${encodeURIComponent(userInput)}`
       })
-      .then(res => res.json())
-      .then(data => {
-        console.log("OTP verify response:", data);
-        if (data.success) {
-          if (data.tempPassword) {
-            localStorage.setItem("tempPassword", data.tempPassword);
-            confetti({
-              particleCount: 150,
-              spread: 70,
-              origin: { y: 0.6 }
-            });
-            status.textContent = "✅ OTP correct! Redirecting to download page...";
-            status.classList.remove("text-red-600");
-            status.classList.add("text-green-600");
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            if (data.tempPassword) {
+              localStorage.setItem("tempPassword", data.tempPassword);
+              confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+              });
+              status.textContent = "✅ OTP correct! Redirecting to download page...";
+              status.classList.remove("text-red-600");
+              status.classList.add("text-green-600");
 
-            setTimeout(() => {
-              window.location.href = `download.html?resource=${encodeURIComponent(resource)}`;
-            }, 2000);
+              setTimeout(() => {
+                window.location.href = `download.html?resource=${encodeURIComponent(resource)}`;
+              }, 2000);
+            } else {
+              status.textContent = "✅ OTP correct, but no temporary password received.";
+              status.classList.remove("text-red-600");
+              status.classList.add("text-green-600");
+            }
           } else {
-            status.textContent = "✅ OTP correct, but no temporary password received.";
-            status.classList.remove("text-red-600");
-            status.classList.add("text-green-600");
+            status.textContent = "❌ Invalid OTP or email. Please try again.";
+            status.classList.remove("text-green-600");
+            status.classList.add("text-red-600");
           }
-        } else {
-          status.textContent = "❌ Invalid OTP or email. Please try again.";
+        })
+        .catch(() => {
+          status.textContent = "❌ Failed to verify OTP. Try again later.";
           status.classList.remove("text-green-600");
           status.classList.add("text-red-600");
-        }
-      })
-      .catch(() => {
-        status.textContent = "❌ Failed to verify OTP. Try again later.";
-        status.classList.remove("text-green-600");
-        status.classList.add("text-red-600");
-      });
+        });
     }
 
-    document.getElementById('request-otp-btn').addEventListener('click', requestOTP);
-    document.getElementById('verify-otp-btn').addEventListener('click', verifyOTP);
+    document.getElementById("request-otp-btn").addEventListener("click", requestOTP);
+    document.getElementById("verify-otp-btn").addEventListener("click", verifyOTP);
   </script>
 </body>
 </html>
