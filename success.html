@@ -290,11 +290,10 @@
 
     // Call Apps Script API
     try {
-      const query = new URLSearchParams({
-        action: "sendOtp",
-        method,
-        contact
-      });
+   const query = new URLSearchParams({
+  action: "sendOtp",
+  [method === "email" ? "email" : "phone"]: contact
+});
       const response = await fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?${query.toString()}`);
       const data = await response.json();
 
@@ -333,12 +332,11 @@
     statusEl.style.color = "black";
 
     try {
-      const query = new URLSearchParams({
-        action: "verifyOtp",
-        method,
-        contact,
-        otp
-      });
+  const query = new URLSearchParams({
+  action: "verifyOtp",
+  otp,
+  [method === "email" ? "email" : "phone"]: contact
+});
       const response = await fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?${query.toString()}`);
       const data = await response.json();
 
