@@ -114,7 +114,7 @@
     statusDiv.textContent = "Missing access token. Cannot proceed.";
   } else {
     // Try to get resource by token
-    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=lookupToken&token=${encodeURIComponent(token)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=lookupToken&token=${encodeURIComponent(token)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.resource && resourceLinks[data.resource]) {
@@ -143,7 +143,7 @@
     statusDiv.style.color = "#2563eb";
     sendTempBtn.disabled = true;
 
-    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=sendTempPass&token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=sendTempPass&token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -180,7 +180,7 @@
     statusDiv.style.color = "#2563eb";
     verifyBtn.disabled = true;
 
-    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=verifyTempPass&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}&resource=${encodeURIComponent(resource)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=verifyTempPass&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}&resource=${encodeURIComponent(resource)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
