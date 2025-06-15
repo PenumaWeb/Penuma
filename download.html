@@ -1,125 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Download Page</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body
-    class="p-6 bg-gray-100 min-h-screen flex flex-col items-center justify-center"
-  >
-    <h1 class="text-2xl font-bold mb-4">Download Your Resource</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Download Access</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #f9fafb;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 400px;
+      margin: 3rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      border-radius: 0.375rem;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      color: white;
+      background-color: #2563eb;
+      transition: background-color 0.3s;
+    }
+    button:disabled {
+      background-color: #a5b4fc;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+    #status {
+      margin-top: 1rem;
+      min-height: 1.5rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Download Your Resource</h1>
+    <p id="welcomeMsg"></p>
 
-    <p id="resource-name" class="mb-4 text-lg"></p>
+    <button id="sendTempBtn">Get Temporary Password via Email</button>
 
-    <p>
-      Please enter the temporary password (OTP) you received to unlock the
-      download:
-    </p>
-    <input
-      id="otp-input"
-      type="text"
-      class="border p-2 rounded mb-4"
-      placeholder="Enter OTP"
-    />
+    <input type="password" id="tempPassInput" placeholder="Enter Temporary Password" disabled autocomplete="off" />
+    <button id="verifyBtn" disabled>Verify & Download</button>
 
-    <button
-      id="verify-btn"
-      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-      Verify OTP & Download
-    </button>
+    <div id="status"></div>
+  </div>
 
-    <p id="status" class="mt-4 text-sm"></p>
+  <script>
+    // Resource name -> Google Drive URL mapping
+    const resourceLinks = {
+      "resource1": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_1",
+      "resource2": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_2"
+      // Add your resources here
+    };
 
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const resource = params.get("resource");
+    // Get URL params: resource and email (must be passed after OTP verification redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resource = urlParams.get("resource");
+    const email = urlParams.get("email");
 
-      const resourceNameEl = document.getElementById("resource-name");
-      const statusEl = document.getElementById("status");
-      const otpInput = document.getElementById("otp-input");
-      const verifyBtn = document.getElementById("verify-btn");
+    const welcomeMsg = document.getElementById("welcomeMsg");
+    const sendTempBtn = document.getElementById("sendTempBtn");
+    const tempPassInput = document.getElementById("tempPassInput");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const statusDiv = document.getElementById("status");
 
-      if (!resource) {
-        resourceNameEl.textContent = "Error: No resource specified.";
-        verifyBtn.disabled = true;
-      } else {
-        resourceNameEl.textContent = `Resource: ${resource}`;
-      }
+    if (!resource || !email) {
+      welcomeMsg.textContent = "Missing resource or email info. Cannot proceed.";
+      sendTempBtn.disabled = true;
+      tempPassInput.disabled = true;
+      verifyBtn.disabled = true;
+    } else {
+      welcomeMsg.textContent = `Hi ${email}, your requested resource is: "${resource}".`;
+    }
 
-      const resourceLinks = {
-        "grade-13-mockexam1-part1":
-          "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-        "grade-13-mockexam1-part2":
-          "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-        "grade-13-mockexam2-part2":
-          "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-        "grade-13-mockexam3-part1":
-          "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
-      };
+    sendTempBtn.addEventListener("click", () => {
+      statusDiv.textContent = "Sending temporary password...";
+      statusDiv.style.color = "black";
+      sendTempBtn.disabled = true;
 
-      verifyBtn.addEventListener("click", () => {
-        const enteredOtp = otpInput.value.trim();
-        if (!enteredOtp) {
-          statusEl.textContent = "Please enter the OTP.";
-          statusEl.style.color = "red";
-          return;
-        }
-
-        statusEl.textContent = "Verifying OTP...";
-        statusEl.style.color = "black";
-        verifyBtn.disabled = true;
-
-        // Use JSONP to call your Google Apps Script - change YOUR_SCRIPT_ID below to your real script ID
-        const callbackName = "handleVerifyResponse";
-
-        // Clean any previous script tags
-        const oldScript = document.getElementById("jsonp-verify");
-        if (oldScript) oldScript.remove();
-
-        // Define callback function globally
-        window[callbackName] = function (data) {
+      fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=sendTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
+        .then(response => response.json())
+        .then(data => {
           if (data.success) {
-            statusEl.textContent = "OTP verified! Starting download...";
-            statusEl.style.color = "green";
-
-            const downloadUrl = resourceLinks[resource];
-            if (downloadUrl) {
-              window.location.href = downloadUrl;
-            } else {
-              statusEl.textContent = "Download link not found for this resource.";
-              statusEl.style.color = "red";
-              verifyBtn.disabled = false;
-            }
+            statusDiv.style.color = "green";
+            statusDiv.textContent = "Temporary password sent! Please check your email.";
+            tempPassInput.disabled = false;
+            verifyBtn.disabled = false;
           } else {
-            statusEl.textContent = data.message || "Invalid OTP. Please try again.";
-            statusEl.style.color = "red";
+            statusDiv.style.color = "red";
+            statusDiv.textContent = data.error || "Failed to send temporary password.";
+            sendTempBtn.disabled = false;
+          }
+        })
+        .catch(err => {
+          statusDiv.style.color = "red";
+          statusDiv.textContent = "Server error: " + err.message;
+          sendTempBtn.disabled = false;
+        });
+    });
+
+    verifyBtn.addEventListener("click", () => {
+      const tempPass = tempPassInput.value.trim();
+      if (!tempPass) {
+        statusDiv.style.color = "red";
+        statusDiv.textContent = "Please enter the temporary password.";
+        return;
+      }
+      statusDiv.textContent = "Verifying temporary password...";
+      statusDiv.style.color = "black";
+      verifyBtn.disabled = true;
+
+      fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=verifyTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            statusDiv.style.color = "green";
+            statusDiv.textContent = "Password verified! Redirecting to your download...";
+            setTimeout(() => {
+              if (resourceLinks[resource]) {
+                window.location.href = resourceLinks[resource];
+              } else {
+                statusDiv.style.color = "red";
+                statusDiv.textContent = "Download link not found for your resource.";
+                verifyBtn.disabled = false;
+              }
+            }, 1500);
+          } else {
+            statusDiv.style.color = "red";
+            statusDiv.textContent = data.error || "Invalid temporary password.";
             verifyBtn.disabled = false;
           }
-        };
-
-        // Create script tag for JSONP
-        const script = document.createElement("script");
-        script.id = "jsonp-verify";
-        script.src =
-          "https://script.google.com/macros/s/AKfycbzz9_gWWTpNwcDn6ismDAoKVRH-pKjlGcDz319GSivRfVnZMyRXoyJJcfFZrpzASPeZ/exec" +
-          "?action=verifyTempPassword" +
-          "&tempPassword=" +
-          encodeURIComponent(enteredOtp) +
-          "&resourceName=" +
-          encodeURIComponent(resource) +
-          "&callback=" +
-          callbackName;
-
-        script.onerror = () => {
-          statusEl.textContent = "Server error during verification. Please try again.";
-          statusEl.style.color = "red";
+        })
+        .catch(err => {
+          statusDiv.style.color = "red";
+          statusDiv.textContent = "Server error: " + err.message;
           verifyBtn.disabled = false;
-        };
-
-        document.body.appendChild(script);
-      });
-    </script>
-  </body>
+        });
+    });
+  </script>
+</body>
 </html>
