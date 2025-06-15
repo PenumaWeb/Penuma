@@ -125,7 +125,7 @@
     sendTempBtn.disabled = true;
 
     // Call your backend to send temp password email
-    fetch(`https://script.google.com/macros/s/AKfycbzEVbREbpOTJIQn0698nmI0FieNhdcXuJJAQDpxxxvyq7m7z16mZi4BIrS9BJlV3tt0/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbw4EFp-pkFxCOq96BM-wlcmtHk_Hfhf7Q_bne6yQIQia6k03RxoQqrvmZMkwydbCgOS/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -162,7 +162,7 @@
     statusDiv.style.color = "#2563eb";
     verifyBtn.disabled = true;
 
-    fetch(`https://script.google.com/macros/s/AKfycbzEVbREbpOTJIQn0698nmI0FieNhdcXuJJAQDpxxxvyq7m7z16mZi4BIrS9BJlV3tt0/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbw4EFp-pkFxCOq96BM-wlcmtHk_Hfhf7Q_bne6yQIQia6k03RxoQqrvmZMkwydbCgOS/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
