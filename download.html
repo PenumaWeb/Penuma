@@ -94,10 +94,8 @@
 
   // Replace this with your actual resource to Drive link map
   const resourceLinks = {
-    "grade-13-paper1-part1": "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-     "grade-13-paper1-part2": "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-     "grade-13-paper2-part2": "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-     "grade-13-paper3-part1": "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link",
+    "resource1": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_1",
+    "resource2": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_2"
   };
 
   // Get resource from URL params
@@ -125,7 +123,7 @@
     sendTempBtn.disabled = true;
 
     // Call your backend to send temp password email
-    fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?action=sendTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -162,7 +160,7 @@
     statusDiv.style.color = "#2563eb";
     verifyBtn.disabled = true;
 
-    fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec=?${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?action=verifyTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
