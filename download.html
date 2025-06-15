@@ -92,24 +92,43 @@
   const statusDiv = document.getElementById('status');
   const form = document.getElementById('downloadForm');
 
-  // Replace this with your actual resource to Drive link map
   const resourceLinks = {
-"grade-13-paper1-part1": "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
-     "grade-13-paper1-part2": "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
-     "grade-13-paper2-part2": "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
-     "grade-13-paper3-part1": "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link"
+    "grade-13-paper1-part1": "https://drive.google.com/file/d/1HAqYNgK57xAAVBuWBG5DBZURSsNIORfW/view?usp=drive_link",
+    "grade-13-paper1-part2": "https://drive.google.com/file/d/1sBCVXQ8s-M46duuI30w2h_ltjtZSaCKu/view?usp=drive_link",
+    "grade-13-paper2-part2": "https://drive.google.com/file/d/1bFo_e-J91-POZShuQ_rkZ5dh-V2yxCZq/view?usp=drive_link",
+    "grade-13-paper3-part1": "https://drive.google.com/file/d/1hTneTtkU0ckpLu0R1-sPb6HtWH41Glwg/view?usp=drive_link"
   };
 
-  // Get resource from URL params
   const urlParams = new URLSearchParams(window.location.search);
-  const resource = urlParams.get("resource");
+  const token = urlParams.get("token");
 
-  if (!resource || !resourceLinks[resource]) {
-    statusDiv.textContent = "Invalid or missing resource. Cannot proceed.";
-    sendTempBtn.disabled = true;
-    verifyBtn.disabled = true;
-    emailInput.disabled = true;
-    tempPassInput.disabled = true;
+  let resource = null;
+
+  // Disable all initially
+  sendTempBtn.disabled = true;
+  verifyBtn.disabled = true;
+  emailInput.disabled = true;
+  tempPassInput.disabled = true;
+
+  if (!token) {
+    statusDiv.textContent = "Missing access token. Cannot proceed.";
+  } else {
+    // Try to get resource by token
+    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=lookupToken&token=${encodeURIComponent(token)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.resource && resourceLinks[data.resource]) {
+          resource = data.resource;
+          emailInput.disabled = false;
+          sendTempBtn.disabled = false;
+          statusDiv.textContent = "Enter your email to request a temporary password.";
+        } else {
+          statusDiv.textContent = "Invalid or expired token.";
+        }
+      })
+      .catch(err => {
+        statusDiv.textContent = "Error validating token.";
+      });
   }
 
   sendTempBtn.addEventListener('click', () => {
@@ -124,8 +143,7 @@
     statusDiv.style.color = "#2563eb";
     sendTempBtn.disabled = true;
 
-    // Call your backend to send temp password email
-    fetch(`https://script.google.com/macros/s/AKfycbw4EFp-pkFxCOq96BM-wlcmtHk_Hfhf7Q_bne6yQIQia6k03RxoQqrvmZMkwydbCgOS/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=sendTempPass&token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -152,8 +170,8 @@
     const email = emailInput.value.trim();
     const tempPass = tempPassInput.value.trim();
 
-    if (!email || !tempPass) {
-      statusDiv.textContent = "Email and temporary password are required.";
+    if (!email || !tempPass || !resource) {
+      statusDiv.textContent = "Email and password are required.";
       statusDiv.style.color = "red";
       return;
     }
@@ -162,7 +180,7 @@
     statusDiv.style.color = "#2563eb";
     verifyBtn.disabled = true;
 
-    fetch(`https://script.google.com/macros/s/AKfycbw4EFp-pkFxCOq96BM-wlcmtHk_Hfhf7Q_bne6yQIQia6k03RxoQqrvmZMkwydbCgOS/exec=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbxjNb0o3b7o7bZYTgWROj5sMlbftEcRj20GhNU0by3HiF1Tscp9ScZHflU5pqJfl8n5/exec?action=verifyTempPass&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}&resource=${encodeURIComponent(resource)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -184,6 +202,7 @@
       });
   });
 </script>
+
 
 </body>
 </html>
