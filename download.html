@@ -123,7 +123,7 @@
     sendTempBtn.disabled = true;
 
     // Call your backend to send temp password email
-    fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=sendTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
+    fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/execaction=sendTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
