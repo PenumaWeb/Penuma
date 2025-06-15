@@ -14,13 +14,32 @@
       background-color: #2563eb;
       border-radius: 10px;
     }
+    body {
+      /* background image behind everything except header */
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      position: relative;
+      min-height: 100vh;
+    }
+    body::before {
+      /* subtle dark overlay for contrast */
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(255 255 255 / 0.85);
+      pointer-events: none;
+      z-index: -1;
+      backdrop-filter: blur(5px);
+    }
   </style>
 </head>
-<body class="bg-gradient-to-b from-indigo-50 to-white min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
   <!-- Header Banner -->
-  <header class="relative h-56 md:h-72 w-full overflow-hidden rounded-b-3xl shadow-lg">
-    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80" alt="Download Banner" class="w-full h-full object-cover brightness-90" />
+  <header class="relative h-56 md:h-72 w-full overflow-hidden rounded-b-3xl shadow-lg bg-blue-400">
     <div class="absolute inset-0 bg-gradient-to-t from-indigo-900 via-transparent to-transparent"></div>
     <div class="absolute bottom-6 left-6 text-white">
       <h1 class="text-3xl md:text-4xl font-bold drop-shadow-lg">Secure Resource Download</h1>
