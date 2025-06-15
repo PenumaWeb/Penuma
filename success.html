@@ -1,187 +1,377 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Secure Download Access</title>
+  <title>Verify OTP</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* custom scrollbar for status */
-    #status::-webkit-scrollbar {
-      width: 6px;
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+      opacity: 0;
     }
-    #status::-webkit-scrollbar-thumb {
-      background-color: #2563eb;
-      border-radius: 10px;
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
-    body {
-      /* background image behind everything except header */
-      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-attachment: fixed;
-      background-position: center;
+    /* Input pulse on focus */
+    input:focus {
+      animation: pulse 1.5s infinite;
+      outline: none;
+      border-color: #2563eb; /* Tailwind blue-600 */
+      box-shadow: 0 0 8px #3b82f6;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 8px #3b82f6; }
+      50% { box-shadow: 0 0 20px #60a5fa; }
+    }
+    /* Button press animation */
+    button:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+    /* Thin circular progress ring container */
+    .progress-ring {
       position: relative;
-      min-height: 100vh;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px auto;
     }
-    body::before {
-      /* subtle dark overlay for contrast */
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(255 255 255 / 0.85);
-      pointer-events: none;
-      z-index: -1;
-      backdrop-filter: blur(5px);
+    .progress-ring circle {
+      fill: transparent;
+      stroke: #2563eb;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.35s ease;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+  <canvas id="confetti-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none"></canvas>
 
-  <!-- Header Banner -->
-  <header class="relative h-56 md:h-72 w-full overflow-hidden rounded-b-3xl shadow-lg bg-blue-400">
-    <div class="absolute inset-0 bg-gradient-to-t from-indigo-900 via-transparent to-transparent"></div>
-    <div class="absolute bottom-6 left-6 text-white">
-      <h1 class="text-3xl md:text-4xl font-bold drop-shadow-lg">Secure Resource Download</h1>
-      <p class="mt-1 text-indigo-200 font-semibold">Access your files safely and quickly</p>
+  <div class="bg-white max-w-md w-full rounded-lg shadow-lg p-6 fade-in">
+    <h1 class="text-2xl font-semibold mb-4 text-center">Verify Your Identity</h1>
+    
+    <!-- Contact input toggle -->
+    <div class="mb-4 flex justify-center space-x-8">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="radio" name="method" value="email" checked class="form-radio text-blue-600" />
+        <span class="ml-2">Email</span>
+      </label>
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="radio" name="method" value="phone" class="form-radio text-blue-600" />
+        <span class="ml-2">Phone Number</span>
+      </label>
     </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="flex-grow container mx-auto px-6 md:px-12 py-10 max-w-md">
-    <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-      <p class="text-gray-700 text-center mb-6 font-medium" id="welcomeMsg">Enter your email and temporary password below to download your resource.</p>
+    <!-- Email or phone input -->
+    <input
+      id="contact-input"
+      type="email"
+      placeholder="Enter your email address"
+      class="w-full p-3 border border-gray-300 rounded-md mb-4 text-center text-lg transition-shadow duration-300"
+      autocomplete="off"
+      spellcheck="false"
+    />
 
-      <form id="downloadForm" class="space-y-6">
-        <div>
-          <label for="emailInput" class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-          <input type="email" id="emailInput" name="email" placeholder="you@example.com" required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" />
-        </div>
+    <p id="info-text" class="text-gray-700 mb-4 text-center whitespace-pre-line"></p>
 
-        <div>
-          <label for="tempPassInput" class="block text-sm font-semibold text-gray-700 mb-2">Temporary Password</label>
-          <input type="password" id="tempPassInput" name="tempPass" placeholder="Enter temporary password" required disabled
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:bg-gray-100 disabled:text-gray-400" />
-        </div>
-
-        <button type="button" id="sendTempBtn"
-          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Send Temporary Password
-        </button>
-
-        <button type="submit" id="verifyBtn" disabled
-          class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-          Verify & Download
-        </button>
-
-        <p id="status" class="mt-4 text-center min-h-[1.5rem] font-semibold"></p>
-      </form>
+    <!-- Progress ring shown during sending OTP -->
+    <div id="progress-ring-container" class="progress-ring hidden" aria-label="OTP sending progress" role="progressbar" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0">
+      <svg width="48" height="48">
+        <circle
+          stroke="#2563eb"
+          stroke-width="4"
+          fill="transparent"
+          r="20"
+          cx="24"
+          cy="24"
+          id="progress-ring-circle"
+          stroke-dasharray="125.6"
+          stroke-dashoffset="125.6"
+        />
+      </svg>
     </div>
-  </main>
 
-  <footer class="py-6 text-center text-gray-500 text-sm select-none">
-    &copy; 2025 Your Company - All Rights Reserved
-  </footer>
+    <!-- OTP input -->
+    <input
+      id="otp-input"
+      type="text"
+      placeholder="Enter OTP"
+      maxlength="10"
+      class="w-full p-3 border border-gray-300 rounded-md mb-4 text-center text-xl font-mono transition-shadow duration-300"
+      autocomplete="off"
+      spellcheck="false"
+      disabled
+    />
 
+    <button
+      id="send-otp-btn"
+      class="w-full bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-3 rounded-md mb-2"
+    >
+      Send OTP
+    </button>
+
+    <button
+      id="verify-btn"
+      class="w-full bg-green-600 hover:bg-green-700 transition-colors text-white font-semibold py-3 rounded-md mb-2"
+      disabled
+    >
+      Verify OTP
+    </button>
+
+    <button
+      id="resend-btn"
+      class="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 rounded-md mt-2 hidden"
+      disabled
+    >
+      Resend OTP
+    </button>
+
+    <p id="status" class="mt-4 text-center text-sm min-h-[1.25rem]"></p>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-  const sendTempBtn = document.getElementById('sendTempBtn');
-  const verifyBtn = document.getElementById('verifyBtn');
-  const emailInput = document.getElementById('emailInput');
-  const tempPassInput = document.getElementById('tempPassInput');
-  const statusDiv = document.getElementById('status');
-  const form = document.getElementById('downloadForm');
+  // Progress ring setup
+  const progressRingContainer = document.getElementById('progress-ring-container');
+  const progressCircle = document.getElementById('progress-ring-circle');
+  const radius = progressCircle.r.baseVal.value;
+  const circumference = 2 * Math.PI * radius;
+  progressCircle.style.strokeDasharray = `${circumference}`;
+  progressCircle.style.strokeDashoffset = `${circumference}`;
 
-  // Replace this with your actual resource to Drive link map
-  const resourceLinks = {
-    "resource1": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_1",
-    "resource2": "https://drive.google.com/drive/folders/YOUR_DRIVE_ID_2"
-  };
-
-  // Get resource from URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  const resource = urlParams.get("resource");
-
-  if (!resource || !resourceLinks[resource]) {
-    statusDiv.textContent = "Invalid or missing resource. Cannot proceed.";
-    sendTempBtn.disabled = true;
-    verifyBtn.disabled = true;
-    emailInput.disabled = true;
-    tempPassInput.disabled = true;
+  function setProgress(percent) {
+    const offset = circumference - (percent / 100) * circumference;
+    progressCircle.style.strokeDashoffset = offset;
   }
 
-  sendTempBtn.addEventListener('click', () => {
-    const email = emailInput.value.trim();
-    if (!email) {
-      statusDiv.textContent = "Please enter a valid email.";
-      statusDiv.style.color = "red";
-      return;
-    }
+  // Confetti function
+  function launchConfetti() {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { 
+      origin: { y: 0.7 }, 
+      particleCount: 50, 
+      spread: 60,
+      ticks: 100,
+      gravity: 0.5,
+      scalar: 1.2
+    };
 
-    statusDiv.textContent = "Sending temporary password...";
-    statusDiv.style.color = "#2563eb";
-    sendTempBtn.disabled = true;
-
-    // Call your backend to send temp password email
-    fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=sendTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          statusDiv.style.color = "green";
-          statusDiv.textContent = "Temporary password sent! Check your email.";
-          tempPassInput.disabled = false;
-          verifyBtn.disabled = false;
-        } else {
-          statusDiv.style.color = "red";
-          statusDiv.textContent = data.error || "Failed to send temporary password.";
-          sendTempBtn.disabled = false;
-        }
-      })
-      .catch(err => {
-        statusDiv.style.color = "red";
-        statusDiv.textContent = "Server error: " + err.message;
-        sendTempBtn.disabled = false;
+    function frame() {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) return;
+      const particleCount = Math.floor((timeLeft / duration) * defaults.particleCount);
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: Math.random(), y: 0.7 }
       });
+      requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  // Elements
+  const sendOtpBtn = document.getElementById("send-otp-btn");
+  const verifyBtn = document.getElementById("verify-btn");
+  const resendBtn = document.getElementById("resend-btn");
+  const otpInput = document.getElementById("otp-input");
+  const contactInput = document.getElementById("contact-input");
+  const statusEl = document.getElementById("status");
+  const infoText = document.getElementById("info-text");
+  const methodRadios = document.querySelectorAll('input[name="method"]');
+
+  // State vars
+  let resendCountdown = 30;
+  let countdownInterval;
+
+  // Update input type & placeholder on method change
+  methodRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if(radio.checked){
+        if(radio.value === 'email'){
+          contactInput.type = 'email';
+          contactInput.placeholder = "Enter your email address";
+          infoText.textContent = "";
+        } else {
+          contactInput.type = 'tel';
+          contactInput.placeholder = "Enter your phone number (e.g. +94123456789)";
+          infoText.textContent = "Note: SMS charges may apply.";
+        }
+        resetOtpUI();
+      }
+    });
   });
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const email = emailInput.value.trim();
-    const tempPass = tempPassInput.value.trim();
-
-    if (!email || !tempPass) {
-      statusDiv.textContent = "Email and temporary password are required.";
-      statusDiv.style.color = "red";
-      return;
-    }
-
-    statusDiv.textContent = "Verifying temporary password...";
-    statusDiv.style.color = "#2563eb";
+  function resetOtpUI(){
+    otpInput.value = "";
+    otpInput.disabled = true;
     verifyBtn.disabled = true;
+    resendBtn.classList.add("hidden");
+    resendBtn.disabled = true;
+    sendOtpBtn.disabled = false;
+    statusEl.textContent = "";
+    clearInterval(countdownInterval);
+  }
 
-    fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?action=verifyTempPass&resource=${encodeURIComponent(resource)}&email=${encodeURIComponent(email)}&tempPass=${encodeURIComponent(tempPass)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          statusDiv.style.color = "green";
-          statusDiv.textContent = "Verification successful! Redirecting...";
-          setTimeout(() => {
-            window.location.href = resourceLinks[resource];
-          }, 1500);
-        } else {
-          statusDiv.style.color = "red";
-          statusDiv.textContent = data.error || "Invalid temporary password.";
-          verifyBtn.disabled = false;
-        }
-      })
-      .catch(err => {
-        statusDiv.style.color = "red";
-        statusDiv.textContent = "Server error: " + err.message;
-        verifyBtn.disabled = false;
+  // Validate contact format simply
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
+  function isValidPhone(phone) {
+    return /^\+?\d{7,15}$/.test(phone); // Simple international format check
+  }
+
+  // Resend countdown timer
+  function startResendCountdown(){
+    resendCountdown = 30;
+    resendBtn.disabled = true;
+    resendBtn.classList.remove("hidden");
+    resendBtn.textContent = `Resend OTP in ${resendCountdown}s`;
+
+    countdownInterval = setInterval(() => {
+      resendCountdown--;
+      resendBtn.textContent = `Resend OTP in ${resendCountdown}s`;
+      if(resendCountdown <= 0){
+        clearInterval(countdownInterval);
+        resendBtn.textContent = "Resend OTP";
+        resendBtn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  // Send OTP to backend
+  async function sendOtp(){
+    const method = document.querySelector('input[name="method"]:checked').value;
+    const contact = contactInput.value.trim();
+
+    if(!contact){
+      statusEl.textContent = "Please enter your email or phone.";
+      statusEl.style.color = "red";
+      return;
+    }
+    if(method === "email" && !isValidEmail(contact)){
+      statusEl.textContent = "Please enter a valid email address.";
+      statusEl.style.color = "red";
+      return;
+    }
+    if(method === "phone" && !isValidPhone(contact)){
+      statusEl.textContent = "Please enter a valid phone number with country code.";
+      statusEl.style.color = "red";
+      return;
+    }
+
+    // Disable buttons and show progress ring
+    sendOtpBtn.disabled = true;
+    verifyBtn.disabled = true;
+    resendBtn.disabled = true;
+    otpInput.disabled = true;
+    statusEl.textContent = "Sending OTP...";
+    statusEl.style.color = "black";
+    progressRingContainer.classList.remove("hidden");
+    setProgress(0);
+
+    // Animate progress ring for 5 seconds
+    const sendDuration = 5000;
+    const startTime = Date.now();
+
+    let progressAnim = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      let progress = Math.min((elapsed / sendDuration) * 100, 100);
+      setProgress(progress);
+      if(progress >= 100){
+        clearInterval(progressAnim);
+        progressRingContainer.classList.add("hidden");
+      }
+    }, 50);
+
+    // Call Apps Script API
+    try {
+      const query = new URLSearchParams({
+        action: "sendOtp",
+        method,
+        contact
       });
-  });
-</script>
+      const response = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?${query.toString()}`);
+      const data = await response.json();
 
+      if(data.success){
+        statusEl.textContent = "OTP sent! Check your " + (method==="email" ? "email." : "phone.");
+        statusEl.style.color = "green";
+        otpInput.disabled = false;
+        verifyBtn.disabled = false;
+        startResendCountdown();
+      } else {
+        statusEl.textContent = data.error || "Failed to send OTP. Try again later.";
+        statusEl.style.color = "red";
+        sendOtpBtn.disabled = false;
+      }
+    } catch(err){
+      statusEl.textContent = "Server error: " + err.message;
+      statusEl.style.color = "red";
+      sendOtpBtn.disabled = false;
+    }
+  }
+
+  // Verify OTP
+  async function verifyOtp(){
+    const method = document.querySelector('input[name="method"]:checked').value;
+    const contact = contactInput.value.trim();
+    const otp = otpInput.value.trim();
+
+    if(!otp){
+      statusEl.textContent = "Please enter the OTP.";
+      statusEl.style.color = "red";
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    statusEl.textContent = "Verifying OTP...";
+    statusEl.style.color = "black";
+
+    try {
+      const query = new URLSearchParams({
+        action: "verifyOtp",
+        method,
+        contact,
+        otp
+      });
+      const response = await fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?${query.toString()}`);
+      const data = await response.json();
+
+      if(data.success){
+        statusEl.textContent = "OTP verified! Redirecting...";
+        statusEl.style.color = "green";
+        launchConfetti();
+
+        // Redirect with temp token ONLY (no resource or email in URL)
+        setTimeout(() => {
+          const url = new URL(window.location.origin + "/download.html");
+          url.searchParams.set("token", data.tempToken); // server sends back a tempToken
+          window.location.href = url.toString();
+        }, 2000);
+      } else {
+        statusEl.textContent = data.error || "Invalid OTP. Please try again.";
+        statusEl.style.color = "red";
+        verifyBtn.disabled = false;
+      }
+    } catch(err){
+      statusEl.textContent = "Server error: " + err.message;
+      statusEl.style.color = "red";
+      verifyBtn.disabled = false;
+    }
+  }
+
+  // Event listeners
+  sendOtpBtn.addEventListener("click", sendOtp);
+  verifyBtn.addEventListener("click", verifyOtp);
+  resendBtn.addEventListener("click", sendOtp);
+
+  // Initialize UI
+  resetOtpUI();
+</script>
 </body>
 </html>
