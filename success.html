@@ -134,6 +134,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+  const resource = urlParams.get("resource"); // will return "resource_1" or any value passed
+
+  const contact = "someone@example.com"; // Replace this dynamically if needed
+
+  // Send the OTP request to Apps Script
+  fetch(`https://script.google.com/macros/s/your-script-id-here/exec?action=sendOtp&contact=${encodeURIComponent(contact)}&resource=${encodeURIComponent(resource)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        console.log("OTP sent successfully");
+      } else {
+        console.error("Failed to send OTP:", data.error);
+      }
+    });
   // Progress ring setup
   const progressRingContainer = document.getElementById('progress-ring-container');
   const progressCircle = document.getElementById('progress-ring-circle');
