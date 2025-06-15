@@ -244,75 +244,76 @@
   }
 
   // Send OTP to backend
-  async function sendOtp(){
-    const method = document.querySelector('input[name="method"]:checked').value;
-    const contact = contactInput.value.trim();
+  async function sendOtp() {
+  const method = document.querySelector('input[name="method"]:checked').value;
+  const contact = contactInput.value.trim();
 
-    if(!contact){
-      statusEl.textContent = "Please enter your email or phone.";
-      statusEl.style.color = "red";
-      return;
+  if (!contact) {
+    statusEl.textContent = "Please enter your email or phone.";
+    statusEl.style.color = "red";
+    return;
+  }
+  if (method === "email" && !isValidEmail(contact)) {
+    statusEl.textContent = "Please enter a valid email address.";
+    statusEl.style.color = "red";
+    return;
+  }
+  if (method === "phone" && !isValidPhone(contact)) {
+    statusEl.textContent = "Please enter a valid phone number with country code.";
+    statusEl.style.color = "red";
+    return;
+  }
+
+  // UI changes
+  sendOtpBtn.disabled = true;
+  verifyBtn.disabled = true;
+  resendBtn.disabled = true;
+  otpInput.disabled = true;
+  statusEl.textContent = "Sending OTP...";
+  statusEl.style.color = "black";
+  progressRingContainer.classList.remove("hidden");
+  setProgress(0);
+
+  const sendDuration = 5000;
+  const startTime = Date.now();
+
+  let progressAnim = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    let progress = Math.min((elapsed / sendDuration) * 100, 100);
+    setProgress(progress);
+    if (progress >= 100) {
+      clearInterval(progressAnim);
+      progressRingContainer.classList.add("hidden");
     }
-    if(method === "email" && !isValidEmail(contact)){
-      statusEl.textContent = "Please enter a valid email address.";
-      statusEl.style.color = "red";
-      return;
-    }
-    if(method === "phone" && !isValidPhone(contact)){
-      statusEl.textContent = "Please enter a valid phone number with country code.";
-      statusEl.style.color = "red";
-      return;
-    }
+  }, 50);
 
-    // Disable buttons and show progress ring
-    sendOtpBtn.disabled = true;
-    verifyBtn.disabled = true;
-    resendBtn.disabled = true;
-    otpInput.disabled = true;
-    statusEl.textContent = "Sending OTP...";
-    statusEl.style.color = "black";
-    progressRingContainer.classList.remove("hidden");
-    setProgress(0);
+  // ✅ Here's the try block — make sure it's followed by catch!
+  try {
+    const query = new URLSearchParams({ action: "sendOtp" });
+    query.set(method === "email" ? "email" : "phone", contact);
 
-    // Animate progress ring for 5 seconds
-    const sendDuration = 5000;
-    const startTime = Date.now();
+    const response = await fetch(
+      `https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?${query.toString()}`
+    );
+    const data = await response.json();
 
-    let progressAnim = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      let progress = Math.min((elapsed / sendDuration) * 100, 100);
-      setProgress(progress);
-      if(progress >= 100){
-        clearInterval(progressAnim);
-        progressRingContainer.classList.add("hidden");
-      }
-    }, 50);
-
-    // Call Apps Script API
-    try {
- const query = new URLSearchParams({ action: "sendOtp" });
-query.set(method === "email" ? "email" : "phone", contact);
-});
-      const response = await fetch(`https://script.google.com/macros/s/AKfycbywk6UZxFnkXhXPl4DVGBYV7IEQgbZb4IkkRJ4BdLj-OEzBltsMb2OzURn8v8VQ3EwF/exec?${query.toString()}`);
-      const data = await response.json();
-
-      if(data.success){
-        statusEl.textContent = "OTP sent! Check your " + (method==="email" ? "email." : "phone.");
-        statusEl.style.color = "green";
-        otpInput.disabled = false;
-        verifyBtn.disabled = false;
-        startResendCountdown();
-      } else {
-        statusEl.textContent = data.error || "Failed to send OTP. Try again later.";
-        statusEl.style.color = "red";
-        sendOtpBtn.disabled = false;
-      }
-    } catch(err){
-      statusEl.textContent = "Server error: " + err.message;
+    if (data.success) {
+      statusEl.textContent = "OTP sent! Check your " + (method === "email" ? "email." : "phone.");
+      statusEl.style.color = "green";
+      otpInput.disabled = false;
+      verifyBtn.disabled = false;
+      startResendCountdown();
+    } else {
+      statusEl.textContent = data.error || "Failed to send OTP. Try again later.";
       statusEl.style.color = "red";
       sendOtpBtn.disabled = false;
     }
+  } catch (err) {
+    statusEl.textContent = "Server error: " + err.message;
+    statusEl.style.color = "red";
+    sendOtpBtn.disabled = false;
   }
+}
 
   // Verify OTP
   async function verifyOtp(){
