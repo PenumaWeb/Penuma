@@ -234,7 +234,7 @@
 
       try {
         const query = new URLSearchParams({ action: "sendOtp", method, contact, resource });
-        const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
+        const response = await fetch(`https://script.google.com/macros/s/AKfycbwKyFC0v8YIYRI36U4OHSccZ3F-4JN8N0uv0JEKXwBTDPsyzrTOX_UFGgmsemAiiiX4/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
           statusEl.textContent = "OTP sent! Check your " + (method==="email" ? "email." : "phone."); statusEl.style.color = "green";
@@ -262,7 +262,7 @@
       statusEl.textContent = "Verifying OTP..."; statusEl.style.color = "black";
       try {
         const query = new URLSearchParams({ action: "verifyOtp", method, contact, otp });
-        const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
+        const response = await fetch(`https://script.google.com/macros/s/AKfycbwKyFC0v8YIYRI36U4OHSccZ3F-4JN8N0uv0JEKXwBTDPsyzrTOX_UFGgmsemAiiiX4/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
           statusEl.textContent = "OTP verified! Redirecting..."; statusEl.style.color = "green";
