@@ -114,7 +114,7 @@
     statusDiv.textContent = "Missing access token. Cannot proceed.";
   } else {
     // Try to get resource by token
-    fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=lookupToken&token=${encodeURIComponent(token)}`)
+   fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=checkToken&token=${encodeURIComponent(token)}`))
       .then(res => res.json())
       .then(data => {
         if (data.success && data.resource && resourceLinks[data.resource]) {
