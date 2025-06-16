@@ -114,21 +114,21 @@
     statusDiv.textContent = "Missing access token. Cannot proceed.";
   } else {
     // Try to get resource by token
-   fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=checkToken&token=${encodeURIComponent(token)}`))
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.resource && resourceLinks[data.resource]) {
-          resource = data.resource;
-          emailInput.disabled = false;
-          sendTempBtn.disabled = false;
-          statusDiv.textContent = "Enter your email to request a temporary password.";
-        } else {
-          statusDiv.textContent = "Invalid or expired token.";
-        }
-      })
-      .catch(err => {
-        statusDiv.textContent = "Error validating token.";
-      });
+fetch(`https://script.google.com/macros/s/AKfycbyg1FxCmVpM3hWBkWwBT_jFwqUxW-zdZ7B-EZ46mVWCGWa5Ic7PkV4RA_B2-1IxMian/exec?action=checkToken&token=${encodeURIComponent(token)}`)
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && data.resource && resourceLinks[data.resource]) {
+      resource = data.resource;
+      emailInput.disabled = false;
+      sendTempBtn.disabled = false;
+      statusDiv.textContent = "Enter your email to request a temporary password.";
+    } else {
+      statusDiv.textContent = "Invalid or expired token.";
+    }
+  })
+  .catch(err => {
+    statusDiv.textContent = "Error validating token.";
+  });
   }
 
   sendTempBtn.addEventListener('click', () => {
