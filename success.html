@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,7 +43,16 @@
   <div class="bg-white max-w-md w-full rounded-lg shadow-lg p-6 fade-in">
     <h1 class="text-2xl font-semibold mb-4 text-center">Verify Your Identity</h1>
 
-    <!-- Removed the email/phone radio buttons -->
+    <div class="mb-4 flex justify-center space-x-8">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="radio" name="method" value="email" checked class="form-radio text-blue-600" />
+        <span class="ml-2">Email</span>
+      </label>
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="radio" name="method" value="phone" class="form-radio text-blue-600" />
+        <span class="ml-2">Phone Number</span>
+      </label>
+    </div>
 
     <input
       id="contact-input"
@@ -140,9 +150,21 @@
     const contactInput = document.getElementById("contact-input");
     const statusEl = document.getElementById("status");
     const infoText = document.getElementById("info-text");
+    const methodRadios = document.querySelectorAll('input[name="method"]');
 
     let resendCountdown = 30;
     let countdownInterval;
+
+    methodRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if(radio.checked){
+          contactInput.type = radio.value === 'email' ? 'email' : 'tel';
+          contactInput.placeholder = radio.value === 'email' ? "Enter your email address" : "Enter your phone number (e.g. +94123456789)";
+          infoText.textContent = radio.value === 'phone' ? "Note: SMS charges may apply." : "";
+          resetOtpUI();
+        }
+      });
+    });
 
     function resetOtpUI(){
       otpInput.value = "";
@@ -157,6 +179,9 @@
 
     function isValidEmail(email) {
       return /\S+@\S+\.\S+/.test(email);
+    }
+    function isValidPhone(phone) {
+      return /^\+?\d{7,15}$/.test(phone);
     }
 
     function startResendCountdown(){
@@ -176,12 +201,16 @@
     }
 
     async function sendOtp(){
+      const method = document.querySelector('input[name="method"]:checked').value;
       const contact = contactInput.value.trim();
       if(!contact){
-        statusEl.textContent = "Please enter your email."; statusEl.style.color = "red"; return;
+        statusEl.textContent = "Please enter your email or phone."; statusEl.style.color = "red"; return;
       }
-      if(!isValidEmail(contact)){
+      if(method === "email" && !isValidEmail(contact)){
         statusEl.textContent = "Please enter a valid email address."; statusEl.style.color = "red"; return;
+      }
+      if(method === "phone" && !isValidPhone(contact)){
+        statusEl.textContent = "Please enter a valid phone number with country code."; statusEl.style.color = "red"; return;
       }
 
       sendOtpBtn.disabled = true;
@@ -205,11 +234,11 @@
       }, 50);
 
       try {
-        const query = new URLSearchParams({ action: "sendOtp", method: "email", contact, resource });
+        const query = new URLSearchParams({ action: "sendOtp", method, contact, resource });
         const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
-          statusEl.textContent = "OTP sent! Check your email."; statusEl.style.color = "green";
+          statusEl.textContent = "OTP sent! Check your " + (method==="email" ? "email." : "phone."); statusEl.style.color = "green";
           otpInput.disabled = false;
           verifyBtn.disabled = false;
           startResendCountdown();
@@ -224,6 +253,7 @@
     }
 
     async function verifyOtp(){
+      const method = document.querySelector('input[name="method"]:checked').value;
       const contact = contactInput.value.trim();
       const otp = otpInput.value.trim();
       if(!otp){
@@ -232,7 +262,7 @@
       verifyBtn.disabled = true;
       statusEl.textContent = "Verifying OTP..."; statusEl.style.color = "black";
       try {
-        const query = new URLSearchParams({ action: "verifyOtp", method: "email", contact, otp });
+        const query = new URLSearchParams({ action: "verifyOtp", method, contact, otp });
         const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
