@@ -384,19 +384,19 @@ https://payhere.lk/pay/o624d5e72" target="_blank"
 
 <script>
   window.addEventListener("load", () => {
-  
+    
     const script = document.createElement("script");
     script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
 
-   
+    // Create visible Turnstile widget
     const widget = document.createElement("div");
     widget.className = "cf-turnstile";
-    widget.setAttribute("data-sitekey", "0x4AAAAAABhyuH0IbwIc9iuV"); 
-    widget.setAttribute("data-size", "invisible");
-    widget.setAttribute("data-theme", "light");
+    widget.setAttribute("data-sitekey", "0x4AAAAAABhyuH0IbwIc9iuV");
+    widget.setAttribute("data-size", "normal");  
+    widget.setAttribute("data-theme", "light");   
     document.body.appendChild(widget);
   });
 </script>
