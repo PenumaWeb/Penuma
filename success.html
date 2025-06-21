@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verify OTP</title>
+  <title>Verify OTP - Email</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Fade in animation */
@@ -42,6 +41,17 @@
 
   <div class="bg-white max-w-md w-full rounded-lg shadow-lg p-6 fade-in">
     <h1 class="text-2xl font-semibold mb-4 text-center">Verify Your Identity</h1>
+
+    <!-- Toggle switch Email <-> Phone -->
+    <div class="flex items-center justify-center mb-6">
+      <span class="text-sm font-medium text-gray-700 mr-3 select-none">Email</span>
+      <label for="page-toggle" class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="page-toggle" class="sr-only peer" />
+        <div class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-green-500 transition duration-300"></div>
+        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-full"></div>
+      </label>
+      <span class="text-sm font-medium text-gray-700 ml-3 select-none">Phone</span>
+    </div>
 
     <div class="mb-4 flex justify-center space-x-8">
       <label class="inline-flex items-center cursor-pointer">
@@ -151,10 +161,19 @@
     const statusEl = document.getElementById("status");
     const infoText = document.getElementById("info-text");
     const methodRadios = document.querySelectorAll('input[name="method"]');
+    const pageToggle = document.getElementById("page-toggle");
 
     let resendCountdown = 30;
     let countdownInterval;
 
+    // Redirect toggle: left (email) = unchecked, right (phone) = checked => redirect to phone page
+    pageToggle.addEventListener("change", function () {
+      if (this.checked) {
+        window.location.href = "verify-phone.html"; // Change to your phone page URL
+      }
+    });
+
+    // Sync radio buttons and contact input type on load & on radio change
     methodRadios.forEach(radio => {
       radio.addEventListener('change', () => {
         if(radio.checked){
@@ -164,6 +183,19 @@
           resetOtpUI();
         }
       });
+    });
+
+    // Make sure initial state is email and pageToggle unchecked
+    window.addEventListener("load", () => {
+      // email radio checked
+      methodRadios.forEach(r => {
+        if(r.value === "email") r.checked = true;
+        else r.checked = false;
+      });
+      contactInput.type = "email";
+      contactInput.placeholder = "Enter your email address";
+      infoText.textContent = "";
+      pageToggle.checked = false;
     });
 
     function resetOtpUI(){
