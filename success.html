@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verify OTP - Email</title>
+  <title>Verify OTP</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Fade in animation */
@@ -42,27 +42,7 @@
   <div class="bg-white max-w-md w-full rounded-lg shadow-lg p-6 fade-in">
     <h1 class="text-2xl font-semibold mb-4 text-center">Verify Your Identity</h1>
 
-    <!-- Toggle switch Email <-> Phone -->
-    <div class="flex items-center justify-center mb-6">
-      <span class="text-sm font-medium text-gray-700 mr-3 select-none">Email</span>
-      <label for="page-toggle" class="relative inline-flex items-center cursor-pointer">
-        <input type="checkbox" id="page-toggle" class="sr-only peer" />
-        <div class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-green-500 transition duration-300"></div>
-        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-full"></div>
-      </label>
-      <span class="text-sm font-medium text-gray-700 ml-3 select-none">Phone</span>
-    </div>
-
-    <div class="mb-4 flex justify-center space-x-8">
-      <label class="inline-flex items-center cursor-pointer">
-        <input type="radio" name="method" value="email" checked class="form-radio text-blue-600" />
-        <span class="ml-2">Email</span>
-      </label>
-      <label class="inline-flex items-center cursor-pointer">
-        <input type="radio" name="method" value="phone" class="form-radio text-blue-600" />
-        <span class="ml-2">Phone Number</span>
-      </label>
-    </div>
+    <!-- Removed the email/phone radio buttons -->
 
     <input
       id="contact-input"
@@ -160,43 +140,9 @@
     const contactInput = document.getElementById("contact-input");
     const statusEl = document.getElementById("status");
     const infoText = document.getElementById("info-text");
-    const methodRadios = document.querySelectorAll('input[name="method"]');
-    const pageToggle = document.getElementById("page-toggle");
 
     let resendCountdown = 30;
     let countdownInterval;
-
-    // Redirect toggle: left (email) = unchecked, right (phone) = checked => redirect to phone page
-    pageToggle.addEventListener("change", function () {
-      if (this.checked) {
-        window.location.href = "verify-phone.html"; // Change to your phone page URL
-      }
-    });
-
-    // Sync radio buttons and contact input type on load & on radio change
-    methodRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if(radio.checked){
-          contactInput.type = radio.value === 'email' ? 'email' : 'tel';
-          contactInput.placeholder = radio.value === 'email' ? "Enter your email address" : "Enter your phone number (e.g. +94123456789)";
-          infoText.textContent = radio.value === 'phone' ? "Note: SMS charges may apply." : "";
-          resetOtpUI();
-        }
-      });
-    });
-
-    // Make sure initial state is email and pageToggle unchecked
-    window.addEventListener("load", () => {
-      // email radio checked
-      methodRadios.forEach(r => {
-        if(r.value === "email") r.checked = true;
-        else r.checked = false;
-      });
-      contactInput.type = "email";
-      contactInput.placeholder = "Enter your email address";
-      infoText.textContent = "";
-      pageToggle.checked = false;
-    });
 
     function resetOtpUI(){
       otpInput.value = "";
@@ -211,9 +157,6 @@
 
     function isValidEmail(email) {
       return /\S+@\S+\.\S+/.test(email);
-    }
-    function isValidPhone(phone) {
-      return /^\+?\d{7,15}$/.test(phone);
     }
 
     function startResendCountdown(){
@@ -233,16 +176,12 @@
     }
 
     async function sendOtp(){
-      const method = document.querySelector('input[name="method"]:checked').value;
       const contact = contactInput.value.trim();
       if(!contact){
-        statusEl.textContent = "Please enter your email or phone."; statusEl.style.color = "red"; return;
+        statusEl.textContent = "Please enter your email."; statusEl.style.color = "red"; return;
       }
-      if(method === "email" && !isValidEmail(contact)){
+      if(!isValidEmail(contact)){
         statusEl.textContent = "Please enter a valid email address."; statusEl.style.color = "red"; return;
-      }
-      if(method === "phone" && !isValidPhone(contact)){
-        statusEl.textContent = "Please enter a valid phone number with country code."; statusEl.style.color = "red"; return;
       }
 
       sendOtpBtn.disabled = true;
@@ -266,11 +205,11 @@
       }, 50);
 
       try {
-        const query = new URLSearchParams({ action: "sendOtp", method, contact, resource });
+        const query = new URLSearchParams({ action: "sendOtp", method: "email", contact, resource });
         const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
-          statusEl.textContent = "OTP sent! Check your " + (method==="email" ? "email." : "phone."); statusEl.style.color = "green";
+          statusEl.textContent = "OTP sent! Check your email."; statusEl.style.color = "green";
           otpInput.disabled = false;
           verifyBtn.disabled = false;
           startResendCountdown();
@@ -285,7 +224,6 @@
     }
 
     async function verifyOtp(){
-      const method = document.querySelector('input[name="method"]:checked').value;
       const contact = contactInput.value.trim();
       const otp = otpInput.value.trim();
       if(!otp){
@@ -294,7 +232,7 @@
       verifyBtn.disabled = true;
       statusEl.textContent = "Verifying OTP..."; statusEl.style.color = "black";
       try {
-        const query = new URLSearchParams({ action: "verifyOtp", method, contact, otp });
+        const query = new URLSearchParams({ action: "verifyOtp", method: "email", contact, otp });
         const response = await fetch(`https://script.google.com/macros/s/AKfycbyy62xyWqZWPJdrsSmqhft37dQWJnwmH2z9lllYaZrefd2BeJeazOIRUbRKuAZIMDBp/exec?${query.toString()}`);
         const data = await response.json();
         if(data.success){
